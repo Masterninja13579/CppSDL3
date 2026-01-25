@@ -8,8 +8,10 @@ include_directories(
 )
 
 target_link_libraries(sandbox PUBLIC
-    imgui
     SDL3::SDL3
+    bgfx
+    bx
+    imgui
 )
 
 install(TARGETS sandbox RUNTIME DESTINATION bin)
