@@ -8,9 +8,6 @@
 # You should have received a copy of the CC0 Public Domain Dedication along with
 # this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-set(BX_CONFIG_DEBUG OFF)
-set(BGFX_CONFIG_DEBUG_ANNOTATION OFF)
-
 cmake_minimum_required(VERSION 3.20) # C++20 support required
 project(bgfx)
 cmake_policy(SET CMP0054 NEW)

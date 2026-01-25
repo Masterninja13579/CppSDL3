@@ -1,7 +1,5 @@
 #pragma once
 
-#include "vendor.h"
-
 bool setLinuxPlatformData(SDL_PropertiesID& id, bgfx::PlatformData& pd)
 {
     void* ptr = SDL_GetPointerProperty(id, SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
