@@ -68,7 +68,7 @@ int bgfxTest()
     init.platformData.ndt = pd.ndt;
     init.resolution.width = width;
     init.resolution.height = height;
-    init.callback = new BgfxNullCallback();
+    //init.callback = new BgfxNullCallback();
     if (!bgfx::init(init))
     {
         std::cout << "ERROR: failed to initialize bgfx\n";

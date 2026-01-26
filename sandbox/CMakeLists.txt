@@ -1,6 +1,6 @@
 add_executable(sandbox
     src/main.cpp
-)
+ )
 
 include_directories(
     ./src
