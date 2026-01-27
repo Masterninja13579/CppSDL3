@@ -2,6 +2,9 @@
 
 #include "core.h"
 
+#include "logo.h"
+#include <bx/uint32_t.h>
+
 #include <iostream>
 
 struct BgfxNullCallback : public bgfx::CallbackI
@@ -28,8 +31,8 @@ int bgfxTest()
         return EXIT_FAILURE;
     }
 
-    const int width = 1080;
-    const int height = 720;
+    int width = 1080;
+    int height = 720;
     SDL_Window* sdlWindow = SDL_CreateWindow(
         "SDL3 + bgfx + ImGui",
         width,
@@ -75,7 +78,7 @@ int bgfxTest()
         return EXIT_FAILURE;
     }
 
-    bgfx::setDebug(BGFX_DEBUG_NONE);
+    bgfx::setDebug(BGFX_DEBUG_TEXT);
     bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030FF, 1.0f, 0);
     bgfx::setViewRect(0, 0, 0, width, height);
 
@@ -90,6 +93,7 @@ int bgfxTest()
     ImGui_ImplSDL3_InitForVulkan(sdlWindow);
 #endif
 
+    int counter = 0;
     bool doStuff = true;
     while (doStuff)
     {
@@ -107,6 +111,15 @@ int bgfxTest()
                     if (event.window.windowID == SDL_GetWindowID(sdlWindow))
                         doStuff = false;
                     break;
+                case SDL_EVENT_WINDOW_RESIZED:
+                {
+                    // Info about texture formats
+                    // https://vfxdoc.readthedocs.io/en/latest/textures/formats/
+                    bgfx::TextureFormat::Enum textureFormat = bgfx::TextureFormat::D24S8;
+                    SDL_GetWindowSize(sdlWindow, &width, &height);
+                    bgfx::reset(width, height, BGFX_RESET_NONE, textureFormat);
+                    std::cout << "Resize event: (" << width << ", " << height << ")\n";
+                }
                 default: break;
             }
         }
@@ -118,6 +131,23 @@ int bgfxTest()
             continue;
         }
 
+        const bgfx::Stats* stats = bgfx::getStats();
+        uint16_t x = bx::max<uint16_t>(uint16_t(stats->textWidth/2), 20) - 20;
+        uint16_t y = bx::max<uint16_t>(uint16_t(stats->textHeight/2), 6) - 6;
+        
+        bgfx::setViewRect(0, 0, 0, width, height);
+        bgfx::touch(0);
+        bgfx::dbgTextClear();
+        bgfx::dbgTextPrintf(0, 1, 0x4f, "Frames: %d", counter++ );
+        bgfx::dbgTextImage(
+            x,
+            y,
+            40, // width
+            12, // height
+            s_logo, // data
+            160 // pixel pitch
+        );
+
         ImGui_Implbgfx_NewFrame();
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
@@ -125,7 +155,6 @@ int bgfxTest()
         ImGui::Render();
         ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
 
-        bgfx::touch(0);
         bgfx::frame();
     }
 
