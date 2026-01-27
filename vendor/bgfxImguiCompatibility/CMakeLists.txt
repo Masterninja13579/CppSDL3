@@ -1,7 +1,7 @@
 
 project(bgfxImguiCompatibility VERSION 1.0.0 DESCRIPTION "Makes bgfx and imgui compatible.")
 
-add_library(bgfxImguiCompatibility)
+add_library(bgfxImguiCompatibility STATIC imgui.cpp)
 
 target_include_directories(
     bgfxImguiCompatibility

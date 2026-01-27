@@ -77,26 +77,61 @@ int bgfxTest()
 
     bgfx::setDebug(BGFX_DEBUG_NONE);
     bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030FF, 1.0f, 0);
+    bgfx::setViewRect(0, 0, 0, width, height);
 
-
-    //IMGUI_CHECKVERSION();
-    //ImGuiContext* imGuiContext = ImGui::CreateContext();
-
-    //void* bgfxContext = bgfx::getInternalData()->context;
-
-    //ImGui_ImplSDL3_InitForD3D(sdlWindow);
-    //ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dDeviceContext);
-    //ImGui_ImplDX12_Init((ImGui_ImplDX12_InitInfo)bgfxContext);
-
-    //imguiCreate();
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGui_Implbgfx_Init(255); // not sure why it's using 255?  could remove the need for this.
+#if OS_WINDOWS
+    ImGui_ImplSDL3_InitForD3D(sdlWindow);
+#elif OS_MAC
+    ImGui_ImplSDL3_InitForMetal(sdlWindow);
+#elif OS_LINUX
+    ImGui_ImplSDL3_InitForVulkan(sdlWindow);
+#endif
 
     bool doStuff = true;
-    //while (doStuff)
-    //{
+    while (doStuff)
+    {
+        // Events
+        SDL_Event event;
+        while (SDL_PollEvent(&event))
+        {
+            ImGui_ImplSDL3_ProcessEvent(&event);
+            switch (event.type)
+            {
+                case SDL_EVENT_QUIT:
+                    doStuff = false;
+                    break;
+                case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+                    if (event.window.windowID == SDL_GetWindowID(sdlWindow))
+                        doStuff = false;
+                    break;
+                default: break;
+            }
+        }
 
-    //}
+        // Sleep if window is not visible
+        if (SDL_GetWindowFlags(sdlWindow) & SDL_WINDOW_MINIMIZED)
+        {
+            SDL_Delay(10);
+            continue;
+        }
 
-    //imguiDestroy();
+        ImGui_Implbgfx_NewFrame();
+        ImGui_ImplSDL3_NewFrame();
+        ImGui::NewFrame();
+        ImGui::ShowDemoWindow();
+        ImGui::Render();
+        ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
+
+        bgfx::touch(0);
+        bgfx::frame();
+    }
+
+    ImGui_ImplSDL3_Shutdown();
+    ImGui_Implbgfx_Shutdown();
+    ImGui::DestroyContext();
     bgfx::shutdown();
     SDL_DestroyWindow(sdlWindow);
     SDL_Quit();

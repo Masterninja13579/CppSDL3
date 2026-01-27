@@ -1,10 +1,11 @@
 add_executable(sandbox
     src/main.cpp
- )
+)
+
+add_subdirectory(src/libraries/imgui-bgfx)
 
 include_directories(
     ./src
-    ${CMAKE_SOURCE_DIR}/lib
 )
 
 target_link_libraries(sandbox PUBLIC
