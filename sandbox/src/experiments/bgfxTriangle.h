@@ -3,7 +3,6 @@
 #include "core.h"
 
 #include "logo.h"
-#include <bx/uint32_t.h>
 
 #include <iostream>
 
@@ -93,6 +92,9 @@ int bgfxTest()
     ImGui_ImplSDL3_InitForVulkan(sdlWindow);
 #endif
 
+    std::cout << "Rendering with " << bgfx::getRendererName(bgfx::getRendererType()) << "\n";
+    //bgfx::reset(width, height, BGFX_RESET_VSYNC, bgfx::TextureFormat::D24S8);
+
     int counter = 0;
     bool doStuff = true;
     while (doStuff)
@@ -115,9 +117,8 @@ int bgfxTest()
                 {
                     // Info about texture formats
                     // https://vfxdoc.readthedocs.io/en/latest/textures/formats/
-                    bgfx::TextureFormat::Enum textureFormat = bgfx::TextureFormat::D24S8;
                     SDL_GetWindowSize(sdlWindow, &width, &height);
-                    bgfx::reset(width, height, BGFX_RESET_NONE, textureFormat);
+                    bgfx::reset(width, height, BGFX_RESET_NONE, bgfx::TextureFormat::D24S8);
                     std::cout << "Resize event: (" << width << ", " << height << ")\n";
                 }
                 default: break;
@@ -132,8 +133,8 @@ int bgfxTest()
         }
 
         const bgfx::Stats* stats = bgfx::getStats();
-        uint16_t x = bx::max<uint16_t>(uint16_t(stats->textWidth/2), 20) - 20;
-        uint16_t y = bx::max<uint16_t>(uint16_t(stats->textHeight/2), 6) - 6;
+        uint16_t x = std::max<uint16_t>(uint16_t(stats->textWidth/2), 20) - 20;
+        uint16_t y = std::max<uint16_t>(uint16_t(stats->textHeight/2), 6) - 6;
         
         bgfx::setViewRect(0, 0, 0, width, height);
         bgfx::touch(0);
