@@ -70,13 +70,12 @@ int bgfxTest()
     init.platformData.ndt = pd.ndt;
     init.resolution.width = width;
     init.resolution.height = height;
-    init.callback = new BgfxNullCallback();
+    //init.callback = new BgfxNullCallback();
     if (!bgfx::init(init))
     {
         std::cout << "ERROR: failed to initialize bgfx\n";
         return EXIT_FAILURE;
     }
-
     bgfx::setDebug(BGFX_DEBUG_TEXT);
     bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030FF, 1.0f, 0);
     bgfx::setViewRect(0, 0, 0, width, height);
@@ -93,12 +92,15 @@ int bgfxTest()
 #endif
 
     std::cout << "Rendering with " << bgfx::getRendererName(bgfx::getRendererType()) << "\n";
-    //bgfx::reset(width, height, BGFX_RESET_VSYNC, bgfx::TextureFormat::D24S8);
 
     int counter = 0;
+    bool showDebugStats = false;
     bool doStuff = true;
     while (doStuff)
     {
+        counter++;
+        std::cout << counter << "\n";
+
         // Events
         SDL_Event event;
         while (SDL_PollEvent(&event))
@@ -115,11 +117,21 @@ int bgfxTest()
                     break;
                 case SDL_EVENT_WINDOW_RESIZED:
                 {
-                    // Info about texture formats
-                    // https://vfxdoc.readthedocs.io/en/latest/textures/formats/
                     SDL_GetWindowSize(sdlWindow, &width, &height);
-                    bgfx::reset(width, height, BGFX_RESET_NONE, bgfx::TextureFormat::D24S8);
-                    std::cout << "Resize event: (" << width << ", " << height << ")\n";
+                    bgfx::reset(width, height, BGFX_RESET_NONE);
+                    bgfx::setViewRect(0, 0, 0, width, height);
+                }
+                case SDL_EVENT_KEY_DOWN:
+                {
+                    // Don't process keyboard events if ImGui has captured the keyboard
+                    if (ImGui::GetIO().WantCaptureKeyboard)
+                        break;
+
+                    if (event.key.key == SDLK_SPACE)
+                    {
+                        showDebugStats = !showDebugStats;
+                        bgfx::setDebug(showDebugStats ? BGFX_DEBUG_STATS : BGFX_DEBUG_TEXT);
+                    }
                 }
                 default: break;
             }
@@ -136,10 +148,10 @@ int bgfxTest()
         uint16_t x = std::max<uint16_t>(uint16_t(stats->textWidth/2), 20) - 20;
         uint16_t y = std::max<uint16_t>(uint16_t(stats->textHeight/2), 6) - 6;
         
-        bgfx::setViewRect(0, 0, 0, width, height);
         bgfx::touch(0);
         bgfx::dbgTextClear();
-        bgfx::dbgTextPrintf(0, 1, 0x4f, "Frames: %d", counter++ );
+        bgfx::dbgTextPrintf(0, 0, 0x70, " Press SPACE to toggle bgfx render stats");
+        bgfx::dbgTextPrintf(0, 1, 0x4f, " Frames: %d", counter);
         bgfx::dbgTextImage(
             x,
             y,
@@ -166,6 +178,5 @@ int bgfxTest()
     SDL_DestroyWindow(sdlWindow);
     SDL_Quit();
 
-    std::cout << "Success!\n";
     return EXIT_SUCCESS;
 }
