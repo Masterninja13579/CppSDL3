@@ -1,40 +1,41 @@
 #pragma once
 
-#include <functional>
 #include <string>
-#include <map>
+#include <unordered_map>
+#include <vector>
 
 namespace BehaviorStateMachine
 {
+	template <typename T>
 	class Behavior;
+
+	template <typename T>
 	struct State
 	{
 		State();
-		std::function<void(Behavior)>* in;
-		std::function<void>* out;
-		std::function<void>* update;
+		void(*in)(Behavior<T>);
+		void(*out)();
+		void(*update)();
 	};
+
+	template <typename T> 
 	class Behavior
 	{
 	public:
 		Behavior();
-		State* current;
+		State<T>* current;
 		void Update();
-		bool TransitionTo(const std::string&);
-		bool TransitionTo(int);
-		bool TransitionTo(State&);
-		bool Add(const std::string&, State&);
-		bool Add(int, State&);
-		bool Add(int, const std::string&, State&);
-		bool Remove(const std::string&);
-		bool Remove(int);
-		bool Remove(State&);
-		bool Contains(const std::string&);
-		bool Contains(int);
-		bool Contains(State&);
+		bool TransitionTo(T);
+		bool TransitionTo(State<T>&);
+		bool Add(T, State<T>&);
+		bool Remove(T);
+		bool Remove(State<T>&);
+		bool Contains(T);
+		bool Contains(State<T>&);
+		State<T>& GetStateById(T);
+		std::vector<State<T>&> GetAllStates();
 	private:
-		std::map<int, State&> mStatesById;
-		std::map<std::string, State&> mStatesByName;
+		std::unordered_map<T, State<T>&> mStatesById;
 	};
 
 }

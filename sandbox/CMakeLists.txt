@@ -2,6 +2,7 @@ add_executable(sandbox
     src/main.cpp
 )
 
+add_subdirectory(src/libraries/behaviorStates)
 add_subdirectory(src/libraries/imgui-bgfx)
 
 include_directories(
