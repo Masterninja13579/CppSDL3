@@ -1,11 +1,12 @@
 #pragma once
 
 #include "core.h"
-#include "bgfxNullCallback.h"
+
+#include "logo.h"
 
 #include <iostream>
 
-int bgfxTest()
+int bgfxHelloWorld()
 {
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
@@ -53,7 +54,7 @@ int bgfxTest()
     init.platformData.ndt = pd.ndt;
     init.resolution.width = width;
     init.resolution.height = height;
-    init.callback = new BgfxNullCallback();
+    //init.callback = new BgfxNullCallback();
     //bgfx::renderFrame(); // Tells bgfx to NOT create a separate render thread if called before init
     if (!bgfx::init(init))
     {
@@ -77,13 +78,9 @@ int bgfxTest()
 
     std::cout << "Rendering with " << bgfx::getRendererName(bgfx::getRendererType()) << "\n";
 
-    int counter = 0;
     bool doStuff = true;
-    bool showStats = false;
     while (doStuff)
     {
-        counter++;
-
         // Events
         SDL_Event event;
         while (SDL_PollEvent(&event))
@@ -104,18 +101,6 @@ int bgfxTest()
                     bgfx::reset(width, height, BGFX_RESET_NONE);
                     bgfx::setViewRect(0, 0, 0, width, height);
                 }
-                case SDL_EVENT_KEY_DOWN:
-                {
-                    // If ImGui is using the keyboard, then don't process keyboard events
-                    if (ImGui::GetIO().WantCaptureKeyboard)
-                        continue;
-                    
-                    if (event.key.key == SDLK_SPACE)
-                    {
-                        showStats = !showStats;
-                        bgfx::setDebug(showStats ? BGFX_DEBUG_STATS : BGFX_DEBUG_TEXT);
-                    }
-                }
                 default: break;
             }
         }
@@ -133,10 +118,14 @@ int bgfxTest()
         
         bgfx::touch(0);
         bgfx::dbgTextClear();
-        if (!showStats)
-        {
-            bgfx::dbgTextPrintf(0, 0, 0x70, " Press SPACE to toggle bgfx render stats ");
-        }
+        bgfx::dbgTextImage(
+            x,
+            y,
+            40, // width
+            12, // height
+            s_logo, // data
+            160 // pixel pitch
+        );
 
         ImGui_Implbgfx_NewFrame();
         ImGui_ImplSDL3_NewFrame();

@@ -26,7 +26,7 @@ elseif (APPLE)
     set(PlatformLibraries )
 elseif (LINUX)
     set(PlatformSources ${imgui_SOURCE_DIR}/backends/imgui_impl_vulkan.cpp)
-    set(PlatformLibraries )
+    set(PlatformLibraries Vulkan::Vulkan)
 endif ()
 
 target_sources(

@@ -1,6 +1,6 @@
 
-#include "experiments/bgfxTriangle.h"
-//#include "libraries/behaviorStates/behaviorStateMachine.h"
+#include "bgfxExamples/all.h"
+#include "experiments/bgfxTest.h"
 
 #include <iostream>
 
@@ -8,7 +8,7 @@ int main(int argc, char** argv)
 {
     try
     {
-        int result = bgfxTest();
+        int result = bgfxHelloWorld();
         std::cout << (result == EXIT_SUCCESS ? "Success\n" : "Failed\n");
         return result;
     }

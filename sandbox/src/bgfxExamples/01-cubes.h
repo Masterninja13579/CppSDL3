@@ -1,28 +1,124 @@
 #pragma once
 
 #include "core.h"
-
-#include "logo.h"
-
 #include <iostream>
 
-struct BgfxNullCallback : public bgfx::CallbackI
+namespace
 {
-		virtual void fatal(const char* _filePath, uint16_t _line, bgfx::Fatal::Enum _code, const char* _str) override {}
-		virtual void traceVargs(const char* _filePath, uint16_t _line, const char* _format, va_list _argList) override {}
-		virtual void profilerBegin(const char* _name, uint32_t _abgr, const char* _filePath, uint16_t _line) override {}
-		virtual void profilerBeginLiteral(const char* _name, uint32_t _abgr, const char* _filePath, uint16_t _line) override {}
-		virtual void profilerEnd() override {}
-		virtual uint32_t cacheReadSize(uint64_t _id) override { return 0; }
-		virtual bool cacheRead(uint64_t _id, void* _data, uint32_t _size) override { return false; }
-		virtual void cacheWrite(uint64_t _id, const void* _data, uint32_t _size) override {}
-		virtual void screenShot(const char* _filePath, uint32_t _width, uint32_t _height, uint32_t _pitch, const void* _data, uint32_t _size, bool _yflip) override {}
-		virtual void captureBegin(uint32_t _width, uint32_t _height, uint32_t _pitch, bgfx::TextureFormat::Enum _format, bool _yflip) override {}
-		virtual void captureEnd() override {}
-		virtual void captureFrame(const void* _data, uint32_t _size) override {}
-};
+    struct PosColorVertex
+    {
+        float m_x;
+        float m_y;
+        float m_z;
+        uint32_t m_abgr;
 
-int bgfxTest()
+        static void init()
+        {
+            ms_layout
+                .begin()
+                .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+                .add(bgfx::Attrib::Color0,   4, bgfx::AttribType::Uint8, true)
+                .end();
+        };
+
+        static bgfx::VertexLayout ms_layout;
+    };
+
+    bgfx::VertexLayout PosColorVertex::ms_layout;
+
+    static PosColorVertex s_cubeVertices[] =
+    {
+        {-1.0f,  1.0f,  1.0f, 0xff000000 },
+        { 1.0f,  1.0f,  1.0f, 0xff0000ff },
+        {-1.0f, -1.0f,  1.0f, 0xff00ff00 },
+        { 1.0f, -1.0f,  1.0f, 0xff00ffff },
+        {-1.0f,  1.0f, -1.0f, 0xffff0000 },
+        { 1.0f,  1.0f, -1.0f, 0xffff00ff },
+        {-1.0f, -1.0f, -1.0f, 0xffffff00 },
+        { 1.0f, -1.0f, -1.0f, 0xffffffff },
+    };
+
+    static const uint16_t s_cubeTriList[] =
+    {
+        0, 1, 2, // 0
+        1, 3, 2,
+        4, 6, 5, // 2
+        5, 6, 7,
+        0, 2, 4, // 4
+        4, 2, 6,
+        1, 5, 3, // 6
+        5, 7, 3,
+        0, 4, 1, // 8
+        4, 5, 1,
+        2, 3, 6, // 10
+        6, 3, 7,
+    };
+
+    static const uint16_t s_cubeTriStrip[] =
+    {
+        0, 1, 2,
+        3,
+        7,
+        1,
+        5,
+        0,
+        4,
+        2,
+        6,
+        7,
+        4,
+        5,
+    };
+
+    static const uint16_t s_cubeLineList[] =
+    {
+        0, 1,
+        0, 2,
+        0, 4,
+        1, 3,
+        1, 5,
+        2, 3,
+        2, 6,
+        3, 7,
+        4, 5,
+        4, 6,
+        5, 7,
+        6, 7,
+    };
+
+    static const uint16_t s_cubeLineStrip[] =
+    {
+        0, 2, 3, 1, 5, 7, 6, 4,
+        0, 2, 6, 4, 5, 7, 3, 1,
+        0,
+    };
+
+    static const uint16_t s_cubePoints[] =
+    {
+        0, 1, 2, 3, 4, 5, 6, 7
+    };
+
+    static const char* s_ptNames[]
+    {
+        "Triangle List",
+        "Triangle Strip",
+        "Lines",
+        "Line Strip",
+        "Points",
+    };
+
+    static const uint64_t s_ptState[]
+    {
+        UINT64_C(0),
+        BGFX_STATE_PT_TRISTRIP,
+        BGFX_STATE_PT_LINES,
+        BGFX_STATE_PT_LINESTRIP,
+        BGFX_STATE_PT_POINTS,
+    };
+    static_assert(BX_COUNTOF(s_ptState) == BX_COUNTOF(s_ptNames));
+}
+
+int bgfxCubes()
 {
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
@@ -49,7 +145,7 @@ int bgfxTest()
     pd.nwh = SDL_GetPointerProperty(sdlPropertiesId, SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
     pd.ndt = NULL;
 #elif OS_LINUX
-    if (!setLinuxPlatformData(sdlPropertiesId, pd))
+    if (!Platform_SetLinuxPlatformData(sdlPropertiesId, pd))
     {
         std::cout << "ERROR: failed to identify linux platform data\n";
         return EXIT_FAILURE;
@@ -71,6 +167,7 @@ int bgfxTest()
     init.resolution.width = width;
     init.resolution.height = height;
     //init.callback = new BgfxNullCallback();
+    //bgfx::renderFrame(); // Tells bgfx to NOT create a separate render thread if called before init
     if (!bgfx::init(init))
     {
         std::cout << "ERROR: failed to initialize bgfx\n";
@@ -79,6 +176,45 @@ int bgfxTest()
     bgfx::setDebug(BGFX_DEBUG_TEXT);
     bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030FF, 1.0f, 0);
     bgfx::setViewRect(0, 0, 0, width, height);
+
+    // Create vertex stream declaration.
+    PosColorVertex::init();
+
+    // Create static vertex buffer.
+    bgfx::VertexBufferHandle vbh = bgfx::createVertexBuffer(
+        // Static data can be passed with bgfx::makeRef
+        bgfx::makeRef(s_cubeVertices, sizeof(s_cubeVertices)),
+        PosColorVertex::ms_layout
+    );
+
+    bgfx::IndexBufferHandle ibh[BX_COUNTOF(s_ptState)];
+    // Create static index buffer for triangle list rendering.
+	ibh[0] = bgfx::createIndexBuffer(
+        // Static data can be passed with bgfx::makeRef
+        bgfx::makeRef(s_cubeTriList, sizeof(s_cubeTriList))
+    );
+	// Create static index buffer for triangle strip rendering.
+	ibh[1] = bgfx::createIndexBuffer(
+		// Static data can be passed with bgfx::makeRef
+		bgfx::makeRef(s_cubeTriStrip, sizeof(s_cubeTriStrip))
+	);
+    // Create static index buffer for line list rendering.
+	ibh[2] = bgfx::createIndexBuffer(
+		// Static data can be passed with bgfx::makeRef
+		bgfx::makeRef(s_cubeLineList, sizeof(s_cubeLineList))
+	);
+    // Create static index buffer for line strip rendering.
+	ibh[3] = bgfx::createIndexBuffer(
+		// Static data can be passed with bgfx::makeRef
+		bgfx::makeRef(s_cubeLineStrip, sizeof(s_cubeLineStrip))
+	);
+    // Create static index buffer for point list rendering.
+	ibh[4] = bgfx::createIndexBuffer(
+		// Static data can be passed with bgfx::makeRef
+		bgfx::makeRef(s_cubePoints, sizeof(s_cubePoints))
+	);
+
+    bgfx::ProgramHandle shaderProgram;
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -93,14 +229,9 @@ int bgfxTest()
 
     std::cout << "Rendering with " << bgfx::getRendererName(bgfx::getRendererType()) << "\n";
 
-    int counter = 0;
-    bool showDebugStats = false;
     bool doStuff = true;
     while (doStuff)
     {
-        counter++;
-        std::cout << counter << "\n";
-
         // Events
         SDL_Event event;
         while (SDL_PollEvent(&event))
@@ -121,18 +252,6 @@ int bgfxTest()
                     bgfx::reset(width, height, BGFX_RESET_NONE);
                     bgfx::setViewRect(0, 0, 0, width, height);
                 }
-                case SDL_EVENT_KEY_DOWN:
-                {
-                    // Don't process keyboard events if ImGui has captured the keyboard
-                    if (ImGui::GetIO().WantCaptureKeyboard)
-                        break;
-
-                    if (event.key.key == SDLK_SPACE)
-                    {
-                        showDebugStats = !showDebugStats;
-                        bgfx::setDebug(showDebugStats ? BGFX_DEBUG_STATS : BGFX_DEBUG_TEXT);
-                    }
-                }
                 default: break;
             }
         }
@@ -150,8 +269,6 @@ int bgfxTest()
         
         bgfx::touch(0);
         bgfx::dbgTextClear();
-        bgfx::dbgTextPrintf(0, 0, 0x70, " Press SPACE to toggle bgfx render stats");
-        bgfx::dbgTextPrintf(0, 1, 0x4f, " Frames: %d", counter);
         bgfx::dbgTextImage(
             x,
             y,

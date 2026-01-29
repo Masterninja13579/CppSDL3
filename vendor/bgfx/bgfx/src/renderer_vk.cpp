@@ -1473,7 +1473,7 @@ VK_IMPORT_INSTANCE
 					, physicalDevices
 					);
 
-				if (VK_SUCCESS != result)
+				if (!(VK_SUCCESS == result || VK_INCOMPLETE == result))
 				{
 					BX_TRACE("Init error: vkEnumeratePhysicalDevices failed %d: %s.", result, getName(result) );
 					goto error;
