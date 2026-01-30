@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -13,9 +14,9 @@ namespace BehaviorStateMachine
 	struct State
 	{
 		State();
-		void(*in)(Behavior<T>);
-		void(*out)();
-		void(*update)();
+		std::function<void(Behavior<T>)> in;
+		std::function<void> out;
+		std::function<void> update;
 	};
 
 	template <typename T> 

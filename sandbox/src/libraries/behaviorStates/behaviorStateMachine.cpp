@@ -30,43 +30,43 @@ void Behavior<T>::Update()
 template <typename T>
 bool Behavior<T>::TransitionTo(T)
 {
-
+	return false;
 }
 
 template <typename T>
 bool Behavior<T>::TransitionTo(State<T>&)
 {
-
+	return false;
 }
 
 template <typename T>
 bool Behavior<T>::Add(T, State<T>&)
 {
-
+	return false;
 }
 
 template <typename T>
 bool Behavior<T>::Remove(T)
 {
-
+	return false;
 }
 
 template <typename T>
 bool Behavior<T>::Remove(State<T>&)
 {
-
+	return false;
 }
 
 template <typename T>
 bool Behavior<T>::Contains(T)
 {
-
+	return false;
 }
 
 template <typename T>
 bool Behavior<T>::Contains(State<T>&)
 {
-
+	return false;
 }
 
 template<typename T>
@@ -80,6 +80,3 @@ vector<State<T>&> BehaviorStateMachine::Behavior<T>::GetAllStates()
 {
 	return vector<State<T>&>();
 }
-
-
-
