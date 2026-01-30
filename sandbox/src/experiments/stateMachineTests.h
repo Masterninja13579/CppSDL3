@@ -23,25 +23,28 @@ class AudioPlayer
 
     void StopIn()
     {
-        std::cout << this << "AudioPlayer::StopIn\n";
+        std::cout << this << " AudioPlayer::StopIn\n";
     }
     void StopUpdate()
     {
-        std::cout << this << "AudioPlayer::StopUpdate\n";
+        std::cout << this << " AudioPlayer::StopUpdate\n";
     }
     void StopOut()
     {
-        std::cout << this << "AudioPlayer::StopOut\n";
+        std::cout << this << " AudioPlayer::StopOut\n";
     }
 
     void PlayIn()
     {
-        std::cout << this << "AudioPlayer::PlayIn\n";
+        std::cout << this << " AudioPlayer::PlayIn\n";
+        songPosition = 0;
+        songLength = 0;
+        songName = "";
         isPlaying = true;
     }
     void PlayUpdate()
     {
-        std::cout << this << "AudioPlayer::PlayUpdate\n";
+        std::cout << this << " AudioPlayer::PlayUpdate\n";
         songPosition++;
         if (songPosition >= songLength)
         {
@@ -50,7 +53,7 @@ class AudioPlayer
     }
     void PlayOut()
     {
-        std::cout << this << "AudioPlayer::PlayOut\n";
+        std::cout << this << " AudioPlayer::PlayOut\n";
         isPlaying = false;
     }
 
@@ -74,7 +77,7 @@ public:
 
         stateMachine.Add(STATE_STOP, stopState);
         stateMachine.Add(STATE_PLAY, playState);
-        //stateMachine.SetState(STATE_STOP);
+        Stop();
     }
 
     void Stop()
@@ -87,7 +90,6 @@ public:
 
     void Play(const std::string& name, int length)
     {
-        stateMachine.TransitionTo(STATE_STOP);
         songName = name;
         songLength = length;
         stateMachine.TransitionTo(STATE_PLAY);
@@ -124,8 +126,8 @@ int runTest()
     player.Update();
     // playOut
     // stopIn
-    player.Update();
     // stopUpdate
+    player.Update();
     player.Update();
     player.Update();
     // stopOut
