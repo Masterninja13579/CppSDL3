@@ -18,8 +18,8 @@ class AudioPlayer
     std::string songName;
 
     Behavior<int> stateMachine;
-    State<int> stopState;
-    State<int> playState;
+    State stopState;
+    State playState;
 
     void StopIn()
     {
@@ -62,13 +62,15 @@ public:
         , songName("")
         , stateMachine()
     {
-        stopState.in = std::bind(AudioPlayer::StopIn, this);
-        stopState.update = std::bind(AudioPlayer::StopUpdate, this);
-        stopState.out = std::bind(AudioPlayer::StopOut, this);
+        // Use std::bind to store a non-static function pointer in a std::function object
+        // Basically this just connects the function pointer to the specific object instance it applies to
+        stopState.in = std::bind(&AudioPlayer::StopIn, this);
+        stopState.update = std::bind(&AudioPlayer::StopUpdate, this);
+        stopState.out = std::bind(&AudioPlayer::StopOut, this);
 
-        playState.in = std::bind(AudioPlayer::PlayIn, this);
-        playState.update = std::bind(AudioPlayer::PlayUpdate, this);
-        playState.out = std::bind(AudioPlayer::PlayOut, this);
+        playState.in = std::bind(&AudioPlayer::PlayIn, this);
+        playState.update = std::bind(&AudioPlayer::PlayUpdate, this);
+        playState.out = std::bind(&AudioPlayer::PlayOut, this);
 
         stateMachine.Add(STATE_STOP, stopState);
         stateMachine.Add(STATE_PLAY, playState);
@@ -138,4 +140,6 @@ int runTest()
     // stopUpdate
     player.Update();
     player.Update();
+
+    return EXIT_SUCCESS;
 }

@@ -10,13 +10,12 @@ namespace BehaviorStateMachine
 	template <typename T>
 	class Behavior;
 
-	template <typename T>
 	struct State
 	{
 		State();
-		std::function<void(Behavior<T>)> in;
-		std::function<void> out;
-		std::function<void> update;
+		std::function<void()> in;
+		std::function<void()> out;
+		std::function<void()> update;
 	};
 
 	template <typename T> 
@@ -24,20 +23,19 @@ namespace BehaviorStateMachine
 	{
 	public:
 		Behavior();
-		State<T>* current;
+		State* current;
 		void Update();
 		bool TransitionTo(T);
-		bool TransitionTo(State<T>&);
-		bool Add(T, State<T>&);
+		bool TransitionTo(State&);
+		bool Add(T, State&);
 		bool Remove(T);
-		bool Remove(State<T>&);
+		bool Remove(State&);
 		bool Contains(T);
-		bool Contains(State<T>&);
-		State<T>& GetStateById(T);
-		std::vector<State<T>&> GetAllStates();
+		bool Contains(State&);
+		State* GetStateById(T);
+		std::vector<State*> GetAllStates();
 	private:
-		std::unordered_map<T, State<T>&> mStatesById;
+		std::unordered_map<T, State*> mStatesById;
 	};
-
 }
 

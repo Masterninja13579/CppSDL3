@@ -4,8 +4,7 @@
 using namespace std;
 using namespace BehaviorStateMachine;
 
-template <typename T>
-State<T>::State()
+State::State()
 	: in(nullptr)
 	, out(nullptr)
 	, update(nullptr)
@@ -34,13 +33,13 @@ bool Behavior<T>::TransitionTo(T)
 }
 
 template <typename T>
-bool Behavior<T>::TransitionTo(State<T>&)
+bool Behavior<T>::TransitionTo(State&)
 {
 	return false;
 }
 
 template <typename T>
-bool Behavior<T>::Add(T, State<T>&)
+bool Behavior<T>::Add(T, State&)
 {
 	return false;
 }
@@ -52,7 +51,7 @@ bool Behavior<T>::Remove(T)
 }
 
 template <typename T>
-bool Behavior<T>::Remove(State<T>&)
+bool Behavior<T>::Remove(State&)
 {
 	return false;
 }
@@ -64,19 +63,22 @@ bool Behavior<T>::Contains(T)
 }
 
 template <typename T>
-bool Behavior<T>::Contains(State<T>&)
+bool Behavior<T>::Contains(State&)
 {
 	return false;
 }
 
 template<typename T>
-State<T>& Behavior<T>::GetStateById(T)
+State* Behavior<T>::GetStateById(T id)
 {
 	// TODO: insert return statement here
+	return mStatesById[id];
 }
 
 template<typename T>
-vector<State<T>&> BehaviorStateMachine::Behavior<T>::GetAllStates()
+vector<State*> Behavior<T>::GetAllStates()
 {
-	return vector<State<T>&>();
+	return vector<State*>();
 }
+
+template class Behavior<int>;
