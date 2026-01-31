@@ -4,7 +4,6 @@ set(IMGUI_VERSION 1.92.4)
 FetchContent_Declare(
     imgui
     URL https://github.com/ocornut/imgui/archive/refs/tags/v${IMGUI_VERSION}.tar.gz
-    FIND_PACKAGE_ARGS ${IMGUI_VERSION}
 )
 FetchContent_MakeAvailable(imgui)
 
