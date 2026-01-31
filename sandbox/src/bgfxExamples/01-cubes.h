@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core.h"
+
 #include <iostream>
 
 namespace
@@ -167,7 +168,6 @@ int bgfxCubes()
     init.resolution.width = width;
     init.resolution.height = height;
     //init.callback = new BgfxNullCallback();
-    //bgfx::renderFrame(); // Tells bgfx to NOT create a separate render thread if called before init
     if (!bgfx::init(init))
     {
         std::cout << "ERROR: failed to initialize bgfx\n";
@@ -215,7 +215,7 @@ int bgfxCubes()
 	);
 
     bgfx::ProgramHandle shaderProgram;
-
+    
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGui_Implbgfx_Init(255); // not sure why it's using 255?  could remove the need for this.

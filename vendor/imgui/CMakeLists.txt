@@ -18,17 +18,6 @@ target_include_directories(
     ${imgui_SOURCE_DIR}/backends
 )
 
-if (WIN32)
-    set(PlatformSources ${imgui_SOURCE_DIR}/backends/imgui_impl_dx11.cpp)
-    set(PlatformLibraries d3dcompiler dwmapi)
-elseif (APPLE)
-    set(PlatformSources ${imgui_SOURCE_DIR}/backends/imgui_impl_metal.mm)
-    set(PlatformLibraries )
-elseif (LINUX)
-    set(PlatformSources ${imgui_SOURCE_DIR}/backends/imgui_impl_vulkan.cpp)
-    set(PlatformLibraries Vulkan::Vulkan)
-endif ()
-
 target_sources(
     imgui
     PUBLIC
@@ -38,12 +27,10 @@ target_sources(
     ${imgui_SOURCE_DIR}/imgui_tables.cpp
     ${imgui_SOURCE_DIR}/imgui_widgets.cpp
     ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp
-    ${PlatformSources}
 )
 
 target_link_libraries(
     imgui 
     PUBLIC 
     SDL3::SDL3
-    ${PlatformLibraries}
 )

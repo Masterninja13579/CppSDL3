@@ -2,7 +2,7 @@ add_executable(sandbox
     src/main.cpp
 )
 
-add_subdirectory(src/libraries/imgui-bgfx)
+add_subdirectory(src/libraries)
 
 include_directories(
     ./src
