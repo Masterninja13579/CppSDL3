@@ -22,8 +22,10 @@ int bgfxShadercTest()
         return EXIT_SUCCESS;
     }
 
-    std::cout << "\n---- Output ----\n" << output;
-    std::cout << "\n---- Error ----\n" << error;
+    if (output.size() > 0)
+        std::cout << "\n---- Output ----\n" << output << "\n";
+    if (error.size() > 0)
+        std::cout << "\n---- Error ----\n" << error << "\n";
 
     return EXIT_SUCCESS;
 }
