@@ -24,23 +24,19 @@ namespace
         return content->size();
     }
 
-    bool runProcess(const char* program, const std::vector<std::string>& arguments, std::string* output, std::string* error, bool autonull)
+    bool runProcess(const char* program, const std::vector<std::string>& arguments, std::string* output, std::string* error)
     {
     	std::string programPath = constructPath(program);
-    	std::cout << "Program Path:\n    '" << programPath << "'\n";
     
         // Create arguments array
-        int size = autonull 
-                 ? arguments.size() + 2 
-                 : arguments.size() + 1;
+        int size = arguments.size() + 2;
         char** args = new char*[size];
 
         // Fill arguments array
         args[0] = (char*)programPath.c_str();
         for (int i = 0; i < arguments.size(); ++i)
             args[i + 1] = (char*)arguments[i].c_str();
-        if (autonull)
-            args[size - 1] = NULL;
+        args[size - 1] = NULL;
 
         // Create process
         struct subprocess_s process;
@@ -57,10 +53,6 @@ namespace
         {
             subprocess_terminate(&process);
             return false;
-        }
-        if (process_return != 0)
-        {
-            std::cout << "ERROR: Subprocess program encountered an error while executing - code " << process_return << "\n";
         }
 
         // Get process output if desired
@@ -82,9 +74,19 @@ namespace bgfx
 {
     namespace tools
     {
-        bool shaderc(const std::vector<std::string>& arguments, std::string* output, std::string* error, bool autonull)
+        bool shaderc(const std::vector<std::string>& arguments, std::string* output, std::string* error)
         {
-            return runProcess("shaderc", arguments, output, error, autonull);
+            return runProcess("shaderc", arguments, output, error);
+        }
+
+        bool geometryc(const std::vector<std::string>& arguments, std::string* output, std::string* error)
+        {
+            return runProcess("geometryc", arguments, output, error);
+        }
+
+        bool texturec(const std::vector<std::string>& arguments, std::string* output, std::string* error)
+        {
+            return runProcess("texturec", arguments, output, error);
         }
     }
 }

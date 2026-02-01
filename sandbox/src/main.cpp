@@ -15,8 +15,8 @@ int main(int argc, char** argv)
 {
     try
     {
-        int result = bgfxShadercTest();
-        std::cout << "\n" << (result == EXIT_SUCCESS ? "Success\n" : "Failed\n");
+        int result = bgfxToolTest(bgfxTool::shaderc);
+        std::cout << "\n" << (result == EXIT_SUCCESS ? "Success!\n" : "Failed!\n");
         return result;
     }
     catch(const std::exception& e)

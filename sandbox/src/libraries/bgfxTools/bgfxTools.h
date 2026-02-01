@@ -10,8 +10,19 @@ namespace bgfx
         bool shaderc(
             const std::vector<std::string>& arguments,
             std::string* output = nullptr, 
-            std::string* error = nullptr, 
-            bool autonull = true
+            std::string* error = nullptr
+        );
+
+        bool geometryc(
+            const std::vector<std::string>& arguments,
+            std::string* output = nullptr,
+            std::string* error = nullptr
+        );
+
+        bool texturec(
+            const std::vector<std::string>& arguments,
+            std::string* output = nullptr,
+            std::string* error = nullptr
         );
     }
 }
