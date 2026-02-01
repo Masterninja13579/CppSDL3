@@ -1,5 +1,12 @@
 #include "bgfxTools.h"
 
+#include "platform/platform.h"
+#ifdef OS_WINDOWS
+    #define SUFFIX ".exe"
+#else
+    #define SUFFIX ""
+#endif
+
 #include <subprocess/subprocess.h>
 
 #include <sstream>
@@ -10,7 +17,7 @@ namespace
     std::string constructPath(const char* program)
     {
     	std::stringstream ss;
-    	ss << "./" << program;
+    	ss << "./" << program << SUFFIX;
     	return ss.str();
     }
 
@@ -20,6 +27,9 @@ namespace
         std::stringstream ss;
         while (fgets(buffer, sizeof(buffer), file) != nullptr)
             ss << buffer;
+        int error = ferror(file);
+        if (error != 0)
+            std::cout << "FILE ERROR: code " << error << "\n";
         *content = ss.str();
         return content->size();
     }
@@ -53,6 +63,10 @@ namespace
         {
             subprocess_terminate(&process);
             return false;
+        }
+        if (process_return != 0)
+        {
+            std::cout << "ERROR: Process returned error code " << process_return << "\n";
         }
 
         // Get process output if desired
