@@ -11,6 +11,10 @@ namespace
         long size = ftell(file);
         fseek(file, 0, SEEK_SET);
 
+        // If the file has a problem
+        if (size <= 0)
+            return size;
+
         // Create buffer to hold data
         char* buffer = new char[size];
 

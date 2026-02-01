@@ -13,8 +13,8 @@ int bgfxShadercTest()
     for (std::string& arg : arguments)
         std::cout << "    '" << arg << "'\n";
     
-    std::string output;
-    std::string error;
+    std::string output = "";
+    std::string error = "";
     bool result = bgfx::tools::shaderc(arguments, &output, &error);
     if (!result)
     {
