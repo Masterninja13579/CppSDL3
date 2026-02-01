@@ -1,0 +1,134 @@
+
+#include "window.h"
+#include <iostream>
+
+using namespace Application;
+
+Window::Window(const char* name)
+	: mName(name)
+	, mWidth(1280)
+	, mHeight(720)
+	, mFlags(SDL_WINDOW_RESIZABLE | PLATFORM_SDL_RENDER_FLAG)
+	, mIsShown(false)
+	, mSDLWindow(nullptr)
+{
+
+}
+
+Window::Window(const char* name, int width, int height, SDL_WindowFlags flags)
+	: mName(name)
+	, mWidth(width)
+	, mHeight(height)
+	, mFlags(flags)
+	, mIsShown(false)
+	, mSDLWindow(nullptr)
+{
+
+}
+
+const char*		Window::GetName() { return mName; }
+int				Window::GetWidth() { return mWidth; }
+int				Window::GetHeight() { return mHeight; }
+SDL_WindowFlags	Window::GetSDLWindowFlags() { return SDL_GetWindowFlags(mSDLWindow); }
+SDL_WindowID	Window::GetSDLWindowId() { return SDL_GetWindowID(mSDLWindow); }
+//SDL_Window*	Window::GetSDLWindow() { return mSDLWindow;  }
+
+
+void Window::Create()
+{
+	if (mIsShown) return;
+
+	mSDLWindow = SDL_CreateWindow(mName, mWidth, mHeight, mFlags);
+	
+	InitBgfx();
+	InitImGui();
+
+	mIsShown = true;
+}
+
+void Window::Destroy()
+{
+	if (!mIsShown) return;
+
+	ImGui_ImplSDL3_Shutdown();
+	ImGui_Implbgfx_Shutdown();
+	ImGui::DestroyContext();
+	bgfx::shutdown();
+	SDL_DestroyWindow(mSDLWindow);
+	SDL_Quit();
+
+	mIsShown = false;
+}
+
+void Window::Refresh()
+{
+	SDL_GetWindowSize(mSDLWindow, &mWidth, &mHeight);
+	bgfx::reset(mWidth, mHeight, BGFX_RESET_NONE);
+	bgfx::setViewRect(0, 0, 0, mWidth, mHeight);
+}
+
+void Window::Resize(int width, int height)
+{
+	mWidth = width;
+	mHeight = height;
+	Refresh();
+}
+
+
+
+void Window::InitBgfx()
+{
+	SDL_PropertiesID sdlPropertiesId = SDL_GetWindowProperties(mSDLWindow);
+	bgfx::PlatformData pd{};
+#ifdef OS_WINDOWS
+	pd.nwh = SDL_GetPointerProperty(sdlPropertiesId, SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+	pd.ndt = NULL;
+#elif OS_LINUX
+	if (!setLinuxPlatformData(sdlPropertiesId, pd))
+	{
+		std::cout << "ERROR: failed to identify linux platform data\n";
+		return;
+	}
+#elif OS_MAC
+	pd.nwh = SDL_GetPointerProperty(sdlPropertiesId, SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
+	pd.ndt = NULL;
+#endif
+	pd.context = NULL;
+	pd.backBuffer = NULL;
+	pd.backBufferDS = NULL;
+	bgfx::setPlatformData(pd);
+
+	bgfx::Init init;
+	init.type = PLATFORM_BGFX_RENDERERTYPE;
+	init.vendorId = BGFX_PCI_ID_NONE;
+	init.platformData.nwh = pd.nwh;
+	init.platformData.ndt = pd.ndt;
+	init.resolution.width = mWidth;
+	init.resolution.height = mHeight;
+	//init.callback = new BgfxNullCallback();
+	if (!bgfx::init(init))
+	{
+		std::cout << "ERROR: failed to initialize bgfx\n";
+		return;
+	}
+	bgfx::setDebug(BGFX_DEBUG_TEXT);
+	bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030FF, 1.0f, 0);
+	bgfx::setViewRect(0, 0, 0, mWidth, mHeight);
+
+}
+
+void Window::InitImGui()
+{
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGui_Implbgfx_Init(255);
+#if OS_WINDOWS
+	ImGui_ImplSDL3_InitForD3D(mSDLWindow);
+#elif OS_MAC
+	ImGui_ImplSDL3_InitForMetal(mSDLWindow);
+#elif OS_LINUX
+	ImGui_ImplSDL3_InitForVulkan(mSDLWindow);
+#endif
+}
+
+

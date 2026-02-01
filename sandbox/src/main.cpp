@@ -1,14 +1,15 @@
 
-//#include "experiments/bgfxTriangle.h"
+#include "experiments/windowTest.h"
 #include "experiments/stateMachineTests.h"
 
+#include "libraries/window/window.h"
 #include <iostream>
 
 int main(int argc, char** argv)
 {
     try
     {
-       int result = runTest();
+       int result = windowTest();
        std::cout << (result == EXIT_SUCCESS ? "Success!\n" : "Failure!\n");
        return result;
     }
