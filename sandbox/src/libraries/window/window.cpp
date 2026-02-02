@@ -1,5 +1,6 @@
 
 #include "window.h"
+
 #include <iostream>
 
 using namespace Application;
@@ -26,12 +27,46 @@ Window::Window(const char* name, int width, int height, SDL_WindowFlags flags)
 
 }
 
+void Window::PrintSDLFlags(const SDL_WindowFlags& flags)
+{
+	std::cout << "Window Flags\n";
+	for (auto it = WindowFlagMap.begin(); it != WindowFlagMap.end(); ++it)
+	{
+		if (flags & it->first)
+			std::cout << "   " << it->second << "\n";
+	}
+}
+
 const char*		Window::GetName() { return mName; }
 int				Window::GetWidth() { return mWidth; }
 int				Window::GetHeight() { return mHeight; }
 SDL_WindowFlags	Window::GetSDLWindowFlags() { return SDL_GetWindowFlags(mSDLWindow); }
 SDL_WindowID	Window::GetSDLWindowId() { return SDL_GetWindowID(mSDLWindow); }
-//SDL_Window*	Window::GetSDLWindow() { return mSDLWindow;  }
+bool			Window::IsFullScreen()
+{
+	Uint64 flags = GetSDLWindowFlags();
+	return flags & SDL_WINDOW_FULLSCREEN;
+}
+bool Window::IsBorderless()
+{
+	Uint64 flags = GetSDLWindowFlags();
+	return flags & SDL_WINDOW_BORDERLESS;
+}
+bool Window::IsWindowed()
+{
+	Uint64 flags = GetSDLWindowFlags();
+	return !(flags & SDL_WINDOW_BORDERLESS) && !(flags & SDL_WINDOW_FULLSCREEN);
+}
+bool Window::IsMinimized()
+{
+	Uint64 flags = GetSDLWindowFlags();
+	return flags & SDL_WINDOW_MINIMIZED;
+}
+bool Window::IsMaximized()
+{
+	Uint64 flags = GetSDLWindowFlags();
+	return flags & SDL_WINDOW_MAXIMIZED;
+}
 
 
 void Window::Create()
@@ -74,6 +109,30 @@ void Window::Resize(int width, int height)
 	Refresh();
 }
 
+void Window::SetFullScreen()
+{
+	SDL_SetWindowFullscreen(mSDLWindow, true);
+}
+
+void Window::SetFullScreen(const SDL_DisplayMode& fullScreenDisplayMode)
+{
+	SDL_SetWindowBordered(mSDLWindow, false);
+	SDL_SetWindowFullscreen(mSDLWindow, true);
+	SDL_SetWindowFullscreenMode(mSDLWindow, &fullScreenDisplayMode);
+}
+
+void Window::SetWindowed()
+{
+	SDL_SetWindowBordered(mSDLWindow, true);
+	SDL_SetWindowFullscreen(mSDLWindow, false);
+}
+
+void Window::SetBorderless()
+{
+	SDL_SetWindowBordered(mSDLWindow, false);
+	SDL_SetWindowFullscreen(mSDLWindow, false);
+}
+
 
 
 void Window::InitBgfx()
@@ -105,7 +164,7 @@ void Window::InitBgfx()
 	init.platformData.ndt = pd.ndt;
 	init.resolution.width = mWidth;
 	init.resolution.height = mHeight;
-	//init.callback = new BgfxNullCallback();
+	init.callback = new BgfxNullCallback();
 	if (!bgfx::init(init))
 	{
 		std::cout << "ERROR: failed to initialize bgfx\n";

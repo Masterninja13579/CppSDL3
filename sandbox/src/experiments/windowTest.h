@@ -25,7 +25,7 @@ struct BgfxNullCallback : public bgfx::CallbackI
 int windowTest()
 {
     //Create window
-    Application::Window window = Application::Window::Window("Application Window Test");
+    Application::Window window = Application::Window::Window("Application Window Test", 1280, 720, PLATFORM_SDL_RENDER_FLAG);
     window.Create();
 
     std::cout << "Rendering with " << bgfx::getRendererName(bgfx::getRendererType()) << "\n";
@@ -36,11 +36,11 @@ int windowTest()
     bool doStuff = true;
     while (doStuff)
     {
-        counter++;
-        std::cout << counter << "\n";
+        //counter++;
+        //std::cout << counter << "\n";
 
         // Sleep if window is not visible
-        if (window.GetSDLWindowFlags() & SDL_WINDOW_MINIMIZED)
+        if (window.IsMinimized())
         {
             SDL_Delay(10);
             continue;
@@ -66,7 +66,23 @@ int windowTest()
         ImGui_Implbgfx_NewFrame();
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
-        ImGui::ShowDemoWindow();
+        //ImGui::ShowDemoWindow();
+        bool doFullScreenToggle = ImGui::Button("Toggle Fullscreen", ImVec2(240, 24));
+        if (doFullScreenToggle)
+        {
+            if (window.IsFullScreen())
+                window.SetWindowed();
+            else
+            {
+                SDL_DisplayMode mode;
+                window.SetFullScreen(mode);
+            }
+        }
+        bool doPrintFlags = ImGui::Button("Print Window Flags", ImVec2(240, 24));
+        if (doPrintFlags)
+        {
+            Application::Window::PrintSDLFlags(window.GetSDLWindowFlags());
+        }
         ImGui::Render();
         ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
 
