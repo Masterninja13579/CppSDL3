@@ -13,6 +13,7 @@ target_link_libraries(sandbox PUBLIC
     bgfx
     bx
     imgui
+    subprocess
 )
 
 install(TARGETS sandbox RUNTIME DESTINATION bin)

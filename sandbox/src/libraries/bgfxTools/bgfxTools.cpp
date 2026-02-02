@@ -1,106 +1,252 @@
 #include "bgfxTools.h"
 
-#include "platform/platform.h"
-#ifdef OS_WINDOWS
-    #define SUFFIX ".exe"
+#if defined(WIN32) || defined(_WIN32) || defined(__Win32__) || defined(__NT__)
+#define OS_WINDOWS
+#define SUFFIX ".exe"
+#elif __APPLE__
+#define OS_MAC
+#define SUFFIX ""
+#elif __linux__
+#define OS_LINUX
+#define SUFFIX ""
 #else
-    #define SUFFIX ""
+#error "Unsupported Operating System"
 #endif
 
-#include <subprocess/subprocess.h>
+#include <subprocess.hpp>
 
+// #include <iostream>
+#include <functional>
 #include <sstream>
-#include <iostream>
+// #include <stdexcept>
 
 namespace
 {
-    std::string constructPath(const char* program)
+    std::string g_toolPath = "./";
+
+    const std::string SHADEROPTIONS_PLATFORM[] =
     {
-    	std::stringstream ss;
-    	ss << "./" << program << SUFFIX;
-    	return ss.str();
-    }
-
-    long readAll(FILE* file, std::string* content)
+        "android",
+        "asm.js",
+        "ios",
+        "linux",
+        "orbis",
+        "osx",
+        "windows"
+    };
+    const std::string SHADEROPTIONS_PROFILE[] =
     {
-        char buffer[1024];
-        std::stringstream ss;
-        while (fgets(buffer, sizeof(buffer), file) != nullptr)
-            ss << buffer;
-        int error = ferror(file);
-        if (error != 0)
-            std::cout << "FILE ERROR: code " << error << "\n";
-        *content = ss.str();
-        return content->size();
-    }
+        "100_es",       // OpenGL ES Shading Language / WebGL (ESSL)
+        "300_es",
+        "310_es",
+        "320_es",
 
-    bool runProcess(const char* program, const std::vector<std::string>& arguments, std::string* output, std::string* error)
+        "s_4_0",        // High-Level Shading Language (HLSL)
+        "s_5_0",
+
+        "metal",        // Metal Shading Language (MSL)
+        "metal10-10",
+        "metal11-10",
+        "metal12-10",
+        "metal20-11",
+        "metal21-11",
+        "metal22-11",
+        "metal23-14",
+        "metal24-14",
+        "metal30-14",
+        "metal31-14",
+
+        "pssl",         // PlayStation Shader Language (PSSL)
+
+        "spirv",        // Standard Portable Intermediate Representation - V (SPIR-V)
+        "spirv10-10",
+        "spirv13-11",
+        "spirv14-11",
+        "spirv15-12",
+        "spirv16-13",
+
+        "120",          // OpenGL Shading Language (GLSL)
+        "130",
+        "140",
+        "150",
+        "330",
+        "400",
+        "410",
+        "420",
+        "430",
+        "440",
+
+        "wgsl"          // WGSL
+    };
+    const std::string SHADEROPTIONS_TYPE[] =
     {
-    	std::string programPath = constructPath(program);
-    
-        // Create arguments array
-        int size = arguments.size() + 2;
-        char** args = new char*[size];
+        "vertex",
+        "fragment",
+        "compute"
+    };
 
-        // Fill arguments array
-        args[0] = (char*)programPath.c_str();
-        for (int i = 0; i < arguments.size(); ++i)
-            args[i + 1] = (char*)arguments[i].c_str();
-        args[size - 1] = NULL;
+    int runProgram(
+        std::vector<std::string>& arguments,
+        std::string* output,
+        std::string* error)
+    {
+        using subprocess::CompletedProcess;
+        using subprocess::RunBuilder;
+        using subprocess::PipeOption;
 
-        // Create process
-        struct subprocess_s process;
-        int result = subprocess_create(args, 0, &process);
-        // Clean up args array before checking result
-        delete[] args;
-        if (result != 0)
-            return false;
+        CompletedProcess process = subprocess::run(
+            arguments,
+            RunBuilder()
+                .cout(PipeOption::pipe)
+                .cerr(PipeOption::pipe)
+        );
 
-        // Wait for process to exit
-        int process_return = 0;
-        result = subprocess_join(&process, &process_return);
-        if (result != 0)
-        {
-            subprocess_terminate(&process);
-            return false;
-        }
-        if (process_return != 0)
-        {
-            std::cout << "ERROR: Process returned error code " << process_return << "\n";
-        }
-
-        // Get process output if desired
-        FILE* processOutput = subprocess_stdout(&process);
-        FILE* processError = subprocess_stderr(&process);
         if (output)
-            readAll(processOutput, output);
+            *output = process.cout;
         if (error)
-            readAll(processError, error);
+            *error = process.cerr;
 
-        // Destroy process
-        subprocess_destroy(&process);
-
-        return true;
+        return process.returncode;
     }
 }
 
-namespace bgfx
+namespace bgfxTools
 {
-    namespace tools
+    void SetToolDirectoryPath(const std::string& path)
     {
-        bool shaderc(const std::vector<std::string>& arguments, std::string* output, std::string* error)
+        g_toolPath = path;
+    }
+
+    bool CompileShader(
+        ShaderOptions& options,
+        std::string* output,
+        std::string* error)
+    {
+        std::vector<std::string> arguments;
+
+        arguments.push_back(g_toolPath + "shaderc");
+
+        if (options.version)
+            arguments.push_back("--version");
+
+        if (options.inputFilePath.size() > 0)
         {
-            return runProcess("shaderc", arguments, output, error);
+            arguments.push_back("-f");
+            arguments.push_back(options.inputFilePath);
         }
 
-        bool geometryc(const std::vector<std::string>& arguments, std::string* output, std::string* error)
+        if (options.includePaths.size() > 0)
         {
-            return runProcess("geometryc", arguments, output, error);
+            for (std::string& path : options.includePaths)
+            {
+                arguments.push_back("-i");
+                arguments.push_back(path);
+            }
         }
 
-        bool texturec(const std::vector<std::string>& arguments, std::string* output, std::string* error)
+        if (options.outputFilePath.size() > 0)
         {
-            return runProcess("texturec", arguments, output, error);
+            arguments.push_back("-o");
+            arguments.push_back(options.outputFilePath);
         }
+
+        if (options.writeOutput)
+            arguments.push_back("--stdout");
+
+        if (options.generateCHeader && options.cHeaderArrayName.size() > 0)
+        {
+            arguments.push_back("--bin2c");
+            arguments.push_back(options.cHeaderArrayName);
+        }
+
+        if (options.generateDependsFile)
+            arguments.push_back("--depends");
+
+        if (options.targetPlatform == ShaderOptions::Platform::Auto)
+#ifdef OS_WINDOWS
+            options.targetPlatform = ShaderOptions::Platform::Windows;
+#elif OS_MAC
+            options.targetPlatform = ShaderOptions::Platform::OSX;
+#elif OS_LINUX
+            options.targetPlatform = ShaderOptions::Platform::Linux;
+#endif
+
+        arguments.push_back("--platform");
+        arguments.push_back(SHADEROPTIONS_PLATFORM[(int)options.targetPlatform]);
+
+        arguments.push_back("--profile");
+        arguments.push_back(SHADEROPTIONS_PROFILE[(int)options.shaderProfile]);
+
+        if (options.preprocess)
+            arguments.push_back("--preprocess");
+
+        if (options.keepComments)
+            arguments.push_back("--keepcomments");
+
+        if (options.preprocessorDefines.size() > 0)
+        {
+            std::stringstream ss;
+            for (int i = 0; i < options.preprocessorDefines.size(); ++i)
+            {
+                if (i > 0)
+                    ss << ";";
+                ss << options.preprocessorDefines[i];
+            }
+            arguments.push_back("--define");
+            arguments.push_back(ss.str());
+        }
+
+        if (options.raw)
+            arguments.push_back("--raw");
+
+        if (options.type != ShaderOptions::Type::None)
+        {
+            arguments.push_back("--type");
+            arguments.push_back(SHADEROPTIONS_TYPE[(int)options.type]);
+        }
+
+        if (options.varyingDefPath.size() > 0)
+        {
+            arguments.push_back("--varyingdef");
+            arguments.push_back(options.varyingDefPath);
+        }
+
+        if (options.verbose)
+            arguments.push_back("--verbose");
+
+        if (options.debug)
+            arguments.push_back("--debug");
+
+        if (options.disassemble)
+            arguments.push_back("--disasm");
+
+        if (options.optimize != ShaderOptions::DXOptimizeLevel::None)
+        {
+            arguments.push_back("-O");
+            arguments.push_back(std::to_string((int)options.optimize));
+        }
+
+        if (options.warnAsError)
+            arguments.push_back("--Werror");
+
+        int result = runProgram(arguments, output, error);
+
+        return result == 0;
+    }
+
+    bool CompileGeometry(
+        GeometryOptions& options,
+        std::string* output,
+        std::string* error)
+    {
+        return true;
+    }
+
+    bool CompileTexture(
+        TextureOptions& options,
+        std::string* output,
+        std::string* error)
+    {
+        return true;
     }
 }

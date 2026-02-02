@@ -1,6 +1,6 @@
 #pragma once
 
-#include "bgfxTools/bgfxTools.h"
+#include "bgfxTools.h"
 
 #include <iostream>
 #include <sstream>
@@ -52,31 +52,45 @@ int bgfxToolTest(bgfxTool tool)
     }
 
     std::cout << "Testing bgfx tool '" << program << "'...\n";
-
-    std::vector<std::string> arguments = {"--help"};
-    std::cout << "Arguments:\n";
-    for (std::string& arg : arguments)
-        std::cout << "    '" << arg << "'\n";
     
     std::string output = "";
     std::string error = "";
     bool result = false;
-    if (tool == bgfxTool::shaderc)
-        result = bgfx::tools::shaderc(arguments, &output, &error);
-    if (tool == bgfxTool::geometryc)
-        result = bgfx::tools::geometryc(arguments, &output, &error);
-    if (tool == bgfxTool::texturec)
-        result = bgfx::tools::texturec(arguments, &output, &error);
-    if (!result)
+
+    switch (tool)
     {
-        std::cout << "Error: problem with subprocess\n";
-        return EXIT_SUCCESS;
+        case bgfxTool::shaderc:
+        {
+            bgfxTools::ShaderOptions options;
+            options.inputFilePath = "./vs_cubes.sc";
+            options.outputFilePath = "abcd.bin";
+            options.shaderProfile = bgfxTools::ShaderOptions::Profile::HLSL_4_0;
+            options.includePaths.push_back("./");
+            options.preprocessorDefines.push_back("FLOAT_ONE=1.0");
+
+            result = bgfxTools::CompileShader(options, &output, &error);
+
+            break;
+        }
+        case bgfxTool::geometryc:
+        {
+            break;
+        }
+        case bgfxTool::texturec:
+        {
+            break;
+        }
+        default: break;
     }
 
+    std::cout << "Result: " << (result ? "true" : "false") << "\n";
     if (output.size() > 0)
-        std::cout << "\n---- Output ----\n" << indent(output, 4) << "\n";
+        std::cout << "---- Output ----\n" << indent(output, 4) << "\n";
+    else
+        std::cout << "---- No Output ----\n";
+
     if (error.size() > 0)
-        std::cout << "\n---- Error ----\n" << indent(error, 4) << "\n";
+        std::cout << "---- Error ----\n" << indent(error, 4) << "\n";
 
     return EXIT_SUCCESS;
 }
