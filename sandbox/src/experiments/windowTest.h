@@ -24,11 +24,13 @@ struct BgfxNullCallback : public bgfx::CallbackI
 
 int windowTest()
 {
+    //Create window
     Application::Window window = Application::Window::Window("Application Window Test");
     window.Create();
 
     std::cout << "Rendering with " << bgfx::getRendererName(bgfx::getRendererType()) << "\n";
-
+    
+    //Create loop
     int counter = 0;
     bool showDebugStats = false;
     bool doStuff = true;
