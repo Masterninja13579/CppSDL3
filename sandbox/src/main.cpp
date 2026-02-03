@@ -1,6 +1,7 @@
 
 #include "experiments/windowTest.h"
 #include "experiments/stateMachineTests.h"
+#include "experiments/bgfxToolsTester.h"
 
 #include <iostream>
 
@@ -8,7 +9,7 @@ int main(int argc, char** argv)
 {
     try
     {
-       int result = windowTest();
+       int result = bgfxToolTest();
        std::cout << (result == EXIT_SUCCESS ? "Success!\n" : "Failure!\n");
        return result;
     }

@@ -7,13 +7,6 @@
 #include <sstream>
 #include <stdexcept>
 
-enum bgfxTool
-{
-    shaderc,
-    geometryc,
-    texturec
-};
-
 namespace
 {
     std::string indent(const std::string& text, int indent)
@@ -41,63 +34,71 @@ namespace
     }
 }
 
-int bgfxToolTest(bgfxTool tool)
+int bgfxToolTest()
 {
-    std::string program;
-    switch (tool)
-    {
-        case bgfxTool::shaderc:     program = "shaderc";    break;
-        case bgfxTool::geometryc:   program = "geometryc";  break;
-        case bgfxTool::texturec:    program = "texturec";   break;
-        default: throw std::logic_error("Missing tool program");
-    }
-
-    std::cout << "Testing bgfx tool '" << program << "'...\n";
-    
     std::string output = "";
     std::string error = "";
     bool result = false;
 
-    switch (tool)
     {
-        case bgfxTool::shaderc:
-        {
-            bgfxTools::ShaderOptions options;
-            options.inputFilePath = "./vs_cubes.sc";
-            options.outputFilePath = "abcd.bin";
-            options.includePaths.push_back("./");
-            options.preprocessorDefines.push_back("FLOAT_ONE=1.0");
-#ifdef OS_WINDOWS
-            options.shaderProfile = bgfxTools::ShaderOptions::Profile::HLSL_4_0;
-#elif OS_MAC
-            options.shaderProfile = bgfxTools::ShaderOptions::Profile::MSL;
-#elif OS_LINUX
-            options.shaderProfile = bgfxTools::ShaderOptions::Profile::SPIRV;
-#endif
+        std::cout << "Calling CompileShader...\n";
 
-            result = bgfxTools::CompileShader(options, &output, &error);
+        bgfxTools::ShaderOptions options;
+        options.version = true;
 
-            break;
-        }
-        case bgfxTool::geometryc:
-        {
-            break;
-        }
-        case bgfxTool::texturec:
-        {
-            break;
-        }
-        default: break;
+        result = bgfxTools::CompileShader(options, &output, &error);
+
+        std::cout << "Result: " << (result ? "true" : "false") << "\n";
+        if (output.size() > 0)
+            std::cout << "---- Output ----\n" << indent(output, 4) << "\n";
+        else
+            std::cout << "---- No Output ----\n";
+        if (error.size() > 0)
+            std::cout << "---- Error ----\n" << indent(error, 4) << "\n";
+        std::cout << "\n";
     }
 
-    std::cout << "Result: " << (result ? "true" : "false") << "\n";
-    if (output.size() > 0)
-        std::cout << "---- Output ----\n" << indent(output, 4) << "\n";
-    else
-        std::cout << "---- No Output ----\n";
+    output = "";
+    error = "";
 
-    if (error.size() > 0)
-        std::cout << "---- Error ----\n" << indent(error, 4) << "\n";
+    {
+        std::cout << "Calling CompileGeometry...\n";
+
+        bgfxTools::GeometryOptions options;
+        options.version = true;
+
+        result = bgfxTools::CompileGeometry(options, &output, &error);
+
+        std::cout << "Result: " << (result ? "true" : "false") << "\n";
+        if (output.size() > 0)
+            std::cout << "---- Output ----\n" << indent(output, 4) << "\n";
+        else
+            std::cout << "---- No Output ----\n";
+        if (error.size() > 0)
+            std::cout << "---- Error ----\n" << indent(error, 4) << "\n";
+        std::cout << "\n";
+    }
+
+    output = "";
+    error = "";
+
+    {
+        std::cout << "Calling CompileTexture...\n";
+
+        bgfxTools::TextureOptions options;
+        options.version = true;
+
+        result = bgfxTools::CompileTexture(options, &output, &error);
+
+        std::cout << "Result: " << (result ? "true" : "false") << "\n";
+        if (output.size() > 0)
+            std::cout << "---- Output ----\n" << indent(output, 4) << "\n";
+        else
+            std::cout << "---- No Output ----\n";
+        if (error.size() > 0)
+            std::cout << "---- Error ----\n" << indent(error, 4) << "\n";
+        std::cout << "\n";
+    }
 
     return EXIT_SUCCESS;
 }
