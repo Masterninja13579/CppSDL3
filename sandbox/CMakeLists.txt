@@ -12,6 +12,7 @@ target_link_libraries(sandbox PUBLIC
     SDL3::SDL3
     bgfx
     bx
+    bimg
     imgui
     subprocess
 )

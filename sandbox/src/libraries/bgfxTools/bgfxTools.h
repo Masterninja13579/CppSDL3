@@ -1,5 +1,7 @@
 #pragma once
 
+#include <bimg/bimg.h>
+
 #include <string>
 #include <vector>
 
@@ -162,7 +164,7 @@ namespace bgfxTools
         /// <summary>
         /// Set a varying.def.sc's file path
         /// </summary>
-        std::string varyingDefPath = "";
+        std::string varyingFilePath = "";
 
         /// <summary>
         /// Be verbose.
@@ -190,14 +192,221 @@ namespace bgfxTools
         bool warnAsError = false;
     };
 
+
+    /// <summary>
+    /// Options for CompileGeometry function.
+    /// </summary>
     struct GeometryOptions
     {
+        enum class Coordinates
+        {
+            LeftHandedYUp = 0,
+            LeftHandedZUp = 1,
+            RightHandedYUp = 2,
+            RightHandedZUp = 3
+        };
 
+        /// <summary>
+        /// Output version information and exit.
+        /// </summary>
+        bool version = false;
+
+        /// <summary>
+        /// Input's file path.
+        /// </summary>
+        std::string inputFilePath = "";
+
+        /// <summary>
+        /// Output's file path.
+        /// </summary>
+        std::string outputFilePath = "";
+
+        /// <summary>
+        /// Scale factor.
+        /// </summary>
+        float scale = 1.0f;
+
+        /// <summary>
+        /// Front face is counter-clockwise winding order
+        /// </summary>
+        bool windCounterClockwise = false;
+
+        /// <summary>
+        /// Flip texture coordinate V.
+        /// </summary>
+        bool flipTextureV = false;
+
+        /// <summary>
+        /// Number of steps for calculating oriented bounding box.
+        /// Defaults to 17.
+        /// Less steps = less precise OBB.
+        /// More steps = slower calculation.
+        /// </summary>
+        unsigned short obbSteps = 17;
+
+        /// <summary>
+        /// Normal packing.
+        /// false - unpacked 12 bytes. (default)
+        /// true - packed 4 bytes.
+        /// </summary>
+        bool packNormals = false;
+
+        /// <summary>
+        /// Texture coordinate packing.
+        /// false - unpacked 8 bytes. (default)
+        /// true - packed 4 bytes.
+        /// </summary>
+        bool packUVs = false;
+
+        /// <summary>
+        /// Calculate tangent vectors. (packing mode is the same as normal)
+        /// </summary>
+        bool calcTangents = false;
+
+        /// <summary>
+        /// Adds barycentric vertex attribute. (Packed in bgfx::Attrib::Color1)
+        /// </summary>
+        bool barycentric = false;
+
+        /// <summary>
+        /// Compress indices.
+        /// </summary>
+        bool compressIndices = false;
+
+        /// <summary>
+        /// Coordinate system.  Defaults to Left-Handed +Y is up.
+        /// </summary>
+        Coordinates coordinates = Coordinates::LeftHandedYUp;
     };
 
     struct TextureOptions
     {
+        enum class Quality
+        {
+            Default,
+            Fastest,
+            Highest
+        };
 
+        enum class LightingModel
+        {
+            None = -1,
+            Phong = 0,
+            PhongBrdf = 1,
+            Blinn = 2,
+            BlinnBrdf = 3,
+            GGX = 4
+        };
+
+        enum class Extension
+        {
+            None = -1,
+            KTX = 0,
+            DDS = 1,
+            PNG = 2,
+            EXR = 3,
+            HDR = 4
+        };
+
+        /// <summary>
+        /// Output version information and exit.
+        /// </summary>
+        bool version = false;
+
+        /// <summary>
+        /// Input file path.
+        /// </summary>
+        std::string inputFilePath = "";
+
+        /// <summary>
+        /// Output file path.
+        /// </summary>
+        std::string outputFilePath = "";
+
+        /// <summary>
+        /// Output format type (BC1/2/3/4/5, ETC1, PVR14, etc.).
+        /// </summary>
+        bimg::TextureFormat::Enum outputFormat = bimg::TextureFormat::Unknown;
+
+        /// <summary>
+        /// Encoding quality.
+        /// </summary>
+        Quality encodingQuality = Quality::Default;
+
+        /// <summary>
+        /// Generate mip-maps.
+        /// </summary>
+        bool generateMipMaps = false;
+
+        /// <summary>
+        /// Skip N number of mips.
+        /// </summary>
+        short mipSkips = -1;
+
+        /// <summary>
+        /// Input texture is normal map. (Implies linear color space)
+        /// </summary>
+        bool isNormalMap = false;
+
+        /// <summary>
+        /// Input texture is equirectangular projection of cubemap.
+        /// </summary>
+        bool isEquirectangular = false;
+
+        /// <summary>
+        /// Input texture is horizontal or vertical strip of cubemap.
+        /// </summary>
+        bool isStrip = false;
+
+        /// <summary>
+        /// Compute SDF texture.
+        /// </summary>
+        bool computeSDF = false;
+
+        /// <summary>
+        /// Alpha refernce value.
+        /// </summary>
+        float alphaReference = 0.0f;
+
+        /// <summary>
+        /// Image Quality Assesment
+        /// </summary>
+        bool doQualityAssesment = false;
+
+        /// <summary>
+        /// Premultiply alpha into RGB channel
+        /// </summary>
+        bool premultiplyAlpha = false;
+
+        /// <summary>
+        /// Input and output texture is linear color space (gamma correction won't be applied).
+        /// </summary>
+        bool isLinear = false;
+
+        /// <summary>
+        /// Maximum width/height (image will be scaled down and aspect ratio will be preserved)
+        /// </summary>
+        unsigned int maxSize = 0;
+
+        /// <summary>
+        /// Radiance cubemap filter. (Lighting model: Phong, PhongBrdf, Blinn, BlinnBrdf, GGX)
+        /// </summary>
+        LightingModel radiance = LightingModel::None;
+
+        /// <summary>
+        /// Save as.
+        /// </summary>
+        Extension saveAs = Extension::None;
+
+        /// <summary>
+        /// List all supported formats.
+        /// </summary>
+        bool listFormats = false;
+
+        /// <summary>
+        /// DEBUG Validate that output image produced matches after loading.
+        /// </summary>
+        bool validate = false;
     };
     
     void SetToolDirectoryPath(const std::string& path);

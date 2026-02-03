@@ -82,6 +82,35 @@ namespace
         "fragment",
         "compute"
     };
+    const std::string GEOMETRYOPTIONS_COORDINATE[] =
+    {
+        "-lh-up+y",
+        "-lh-up+z",
+        "-rh-up+y",
+        "-rh-up+z"
+    };
+    const std::string TEXTUREOPTIONS_QUALITY[] =
+    {
+        "default",
+        "fastest",
+        "highest"
+    };
+    const std::string TEXTUREOPTIONS_LIGHTINGMODEL[] =
+    {
+        "phong",
+        "phongbrdf",
+        "blinn",
+        "blinnbrdf",
+        "ggx"
+    };
+    const std::string TEXTUREOPTIONS_EXTENSIONS[] =
+    {
+        ".ktx",
+        ".dds",
+        ".png",
+        ".exr",
+        ".hdr"
+    };
 
     int runProgram(
         std::vector<std::string>& arguments,
@@ -203,10 +232,10 @@ namespace bgfxTools
             arguments.push_back(SHADEROPTIONS_TYPE[(int)options.type]);
         }
 
-        if (options.varyingDefPath.size() > 0)
+        if (options.varyingFilePath.size() > 0)
         {
             arguments.push_back("--varyingdef");
-            arguments.push_back(options.varyingDefPath);
+            arguments.push_back(options.varyingFilePath);
         }
 
         if (options.verbose)
@@ -237,7 +266,73 @@ namespace bgfxTools
         std::string* output,
         std::string* error)
     {
-        return true;
+        std::vector<std::string> arguments;
+
+        arguments.push_back(g_toolPath + "shaderc" + SUFFIX);
+
+        if (options.version)
+            arguments.push_back("--version");
+
+        if (options.inputFilePath.size() > 0)
+        {
+            arguments.push_back("-f");
+            arguments.push_back(options.inputFilePath);
+        }
+
+        if (options.outputFilePath.size() > 0)
+        {
+            arguments.push_back("-o");
+            arguments.push_back(options.outputFilePath);
+        }
+
+        if (options.scale != 1.0f)
+        {
+            std::stringstream ss;
+            ss << options.scale;
+            arguments.push_back("--scale");
+            arguments.push_back(ss.str());
+        }
+
+        if (options.windCounterClockwise)
+            arguments.push_back("--ccw");
+
+        if (options.flipTextureV)
+            arguments.push_back("-flipv");
+
+        if (options.obbSteps != 17)
+        {
+            std::stringstream ss;
+            ss << options.obbSteps;
+            arguments.push_back("-obb");
+            arguments.push_back(ss.str());
+        }
+
+        if (options.packNormals)
+        {
+            arguments.push_back("--packnormal");
+            arguments.push_back("1");
+        }
+
+        if (options.packUVs)
+        {
+            arguments.push_back("--packuv");
+            arguments.push_back("1");
+        }
+
+        if (options.calcTangents)
+            arguments.push_back("--tangent");
+
+        if (options.barycentric)
+            arguments.push_back("--barycentric");
+
+        if (options.compressIndices)
+            arguments.push_back("--compress");
+
+        arguments.push_back(GEOMETRYOPTIONS_COORDINATE[(int)options.coordinates]);
+
+        int result = runProgram(arguments, output, error);
+
+        return result == 0;
     }
 
     bool CompileTexture(
@@ -245,6 +340,106 @@ namespace bgfxTools
         std::string* output,
         std::string* error)
     {
-        return true;
+        std::vector<std::string> arguments;
+
+        arguments.push_back(g_toolPath + "texturec" + SUFFIX);
+
+        if (options.version)
+            arguments.push_back("--version");
+
+        if (options.inputFilePath.size() > 0)
+        {
+            arguments.push_back("-f");
+            arguments.push_back(options.inputFilePath);
+        }
+
+        if (options.outputFilePath.size() > 0)
+        {
+            arguments.push_back("-o");
+            arguments.push_back(options.outputFilePath);
+        }
+
+        if (options.outputFormat != bimg::TextureFormat::Unknown)
+        {
+            const char* format = bimg::getName(options.outputFormat);
+            arguments.push_back("-t");
+            arguments.push_back(format);
+        }
+
+        if (options.encodingQuality != TextureOptions::Quality::Default)
+        {
+            arguments.push_back("-q");
+            arguments.push_back(TEXTUREOPTIONS_QUALITY[(int)options.encodingQuality]);
+        }
+
+        if (options.generateMipMaps)
+            arguments.push_back("--mips");
+
+        if (options.mipSkips >= 0)
+        {
+            std::stringstream ss;
+            ss << options.mipSkips;
+            arguments.push_back("-mipskip");
+            arguments.push_back(ss.str());
+        }
+
+        if (options.isNormalMap)
+            arguments.push_back("--normalmap");
+
+        if (options.isEquirectangular)
+            arguments.push_back("--equirect");
+
+        if (options.isStrip)
+            arguments.push_back("--strip");
+
+        if (options.computeSDF)
+            arguments.push_back("--sdf");
+
+        if (options.alphaReference > 0.0f)
+        {
+            std::stringstream ss;
+            ss << options.alphaReference;
+            arguments.push_back("--ref");
+            arguments.push_back(ss.str());
+        }
+
+        if (options.doQualityAssesment)
+            arguments.push_back("--iqa");
+
+        if (options.premultiplyAlpha)
+            arguments.push_back("--pma");
+
+        if (options.isLinear)
+            arguments.push_back("--linear");
+
+        if (options.maxSize > 0)
+        {
+            std::stringstream ss;
+            ss << options.maxSize;
+            arguments.push_back("--max");
+            arguments.push_back(ss.str());
+        }
+
+        if (options.radiance != TextureOptions::LightingModel::None)
+        {
+            arguments.push_back("--radiance");
+            arguments.push_back(TEXTUREOPTIONS_LIGHTINGMODEL[(int)options.radiance]);
+        }
+
+        if (options.saveAs != TextureOptions::Extension::None)
+        {
+            arguments.push_back("--as");
+            arguments.push_back(TEXTUREOPTIONS_EXTENSIONS[(int)options.saveAs]);
+        }
+
+        if (options.listFormats)
+            arguments.push_back("--formats");
+
+        if (options.validate)
+            arguments.push_back("--validate");
+
+        int result = runProgram(arguments, output, error);
+
+        return result == 0;
     }
 }
