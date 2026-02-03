@@ -65,6 +65,8 @@ int bgfxToolTest(bgfxTool tool)
             bgfxTools::ShaderOptions options;
             options.inputFilePath = "./vs_cubes.sc";
             options.outputFilePath = "abcd.bin";
+            options.includePaths.push_back("./");
+            options.preprocessorDefines.push_back("FLOAT_ONE=1.0");
 #ifdef OS_WINDOWS
             options.shaderProfile = bgfxTools::ShaderOptions::Profile::HLSL_4_0;
 #elif OS_MAC
@@ -72,8 +74,6 @@ int bgfxToolTest(bgfxTool tool)
 #elif OS_LINUX
             options.shaderProfile = bgfxTools::ShaderOptions::Profile::SPIRV;
 #endif
-            options.includePaths.push_back("./");
-            options.preprocessorDefines.push_back("FLOAT_ONE=1.0");
 
             result = bgfxTools::CompileShader(options, &output, &error);
 

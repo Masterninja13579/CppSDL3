@@ -1,5 +1,11 @@
+# Build folders
 build
+out
 
+# IDE specific folders
 .vs
 .idea
+
+# IDE specific files
+CMakeSettings.json
 

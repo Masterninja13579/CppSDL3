@@ -122,7 +122,7 @@ namespace bgfxTools
     {
         std::vector<std::string> arguments;
 
-        arguments.push_back(g_toolPath + "shaderc");
+        arguments.push_back(g_toolPath + "shaderc" + SUFFIX);
 
         if (options.version)
             arguments.push_back("--version");
