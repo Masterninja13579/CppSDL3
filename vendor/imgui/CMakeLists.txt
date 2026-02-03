@@ -4,7 +4,6 @@ set(IMGUI_VERSION 1.92.4)
 FetchContent_Declare(
     imgui
     URL https://github.com/ocornut/imgui/archive/refs/tags/v${IMGUI_VERSION}.tar.gz
-    FIND_PACKAGE_ARGS ${IMGUI_VERSION}
 )
 FetchContent_MakeAvailable(imgui)
 
@@ -18,17 +17,6 @@ target_include_directories(
     ${imgui_SOURCE_DIR}/backends
 )
 
-if (WIN32)
-    set(PlatformSources ${imgui_SOURCE_DIR}/backends/imgui_impl_dx11.cpp)
-    set(PlatformLibraries d3dcompiler dwmapi)
-elseif (APPLE)
-    set(PlatformSources ${imgui_SOURCE_DIR}/backends/imgui_impl_metal.mm)
-    set(PlatformLibraries )
-elseif (LINUX)
-    set(PlatformSources ${imgui_SOURCE_DIR}/backends/imgui_impl_vulkan.cpp)
-    set(PlatformLibraries )
-endif ()
-
 target_sources(
     imgui
     PUBLIC
@@ -38,12 +26,10 @@ target_sources(
     ${imgui_SOURCE_DIR}/imgui_tables.cpp
     ${imgui_SOURCE_DIR}/imgui_widgets.cpp
     ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp
-    ${PlatformSources}
 )
 
 target_link_libraries(
     imgui 
     PUBLIC 
     SDL3::SDL3
-    ${PlatformLibraries}
 )

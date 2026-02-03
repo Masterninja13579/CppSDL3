@@ -1,10 +1,8 @@
 add_executable(sandbox
     src/main.cpp
- )
+)
 
-add_subdirectory(src/libraries/behaviorStates)
-add_subdirectory(src/libraries/imgui-bgfx)
-add_subdirectory(src/libraries/window)
+add_subdirectory(src/libraries)
 
 include_directories(
     ./src
@@ -15,6 +13,7 @@ target_link_libraries(sandbox PUBLIC
     bgfx
     bx
     imgui
+    subprocess
 )
 
 install(TARGETS sandbox RUNTIME DESTINATION bin)

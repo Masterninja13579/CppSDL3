@@ -8,26 +8,23 @@
 
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
+#include <bx/uint32_t.h>
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_properties.h>
 
 #ifdef OS_WINDOWS 
-    #include <windows.h>
-    #include <imgui_impl_dx11.h>
     #define PLATFORM_SDL_RENDER_FLAG 0
     #define PLATFORM_BGFX_RENDERERTYPE bgfx::RendererType::Direct3D11;
 #endif
 
 #ifdef OS_MAC
-    #include <imgui_impl_metal.h>
     #define PLATFORM_SDL_RENDER_FLAG SDL_WINDOW_METAL
     #define PLATFORM_BGFX_RENDERERTYPE bgfx::RendererType::Metal;
 #endif
 
 #ifdef OS_LINUX 
     #include "platform/linux/platformdata.h"
-    #include <imgui_impl_vulkan.h>
     #define PLATFORM_SDL_RENDER_FLAG SDL_WINDOW_VULKAN
     #define PLATFORM_BGFX_RENDERERTYPE bgfx::RendererType::Vulkan;
 #endif

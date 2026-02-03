@@ -1,24 +1,9 @@
 #pragma once
 
 #include "core.h"
+#include "bgfxNullCallback.h"
 
 #include <iostream>
-
-struct BgfxNullCallback : public bgfx::CallbackI
-{
-		virtual void fatal(const char* _filePath, uint16_t _line, bgfx::Fatal::Enum _code, const char* _str) override {}
-		virtual void traceVargs(const char* _filePath, uint16_t _line, const char* _format, va_list _argList) override {}
-		virtual void profilerBegin(const char* _name, uint32_t _abgr, const char* _filePath, uint16_t _line) override {}
-		virtual void profilerBeginLiteral(const char* _name, uint32_t _abgr, const char* _filePath, uint16_t _line) override {}
-		virtual void profilerEnd() override {}
-		virtual uint32_t cacheReadSize(uint64_t _id) override { return 0; }
-		virtual bool cacheRead(uint64_t _id, void* _data, uint32_t _size) override { return false; }
-		virtual void cacheWrite(uint64_t _id, const void* _data, uint32_t _size) override {}
-		virtual void screenShot(const char* _filePath, uint32_t _width, uint32_t _height, uint32_t _pitch, const void* _data, uint32_t _size, bool _yflip) override {}
-		virtual void captureBegin(uint32_t _width, uint32_t _height, uint32_t _pitch, bgfx::TextureFormat::Enum _format, bool _yflip) override {}
-		virtual void captureEnd() override {}
-		virtual void captureFrame(const void* _data, uint32_t _size) override {}
-};
 
 int bgfxTest()
 {
@@ -28,8 +13,8 @@ int bgfxTest()
         return EXIT_FAILURE;
     }
 
-    const int width = 1080;
-    const int height = 720;
+    int width = 1080;
+    int height = 720;
     SDL_Window* sdlWindow = SDL_CreateWindow(
         "SDL3 + bgfx + ImGui",
         width,
@@ -47,7 +32,7 @@ int bgfxTest()
     pd.nwh = SDL_GetPointerProperty(sdlPropertiesId, SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
     pd.ndt = NULL;
 #elif OS_LINUX
-    if (!setLinuxPlatformData(sdlPropertiesId, pd))
+    if (!Platform_SetLinuxPlatformData(sdlPropertiesId, pd))
     {
         std::cout << "ERROR: failed to identify linux platform data\n";
         return EXIT_FAILURE;
@@ -68,20 +53,107 @@ int bgfxTest()
     init.platformData.ndt = pd.ndt;
     init.resolution.width = width;
     init.resolution.height = height;
-    //init.callback = new BgfxNullCallback();
+    init.callback = new BgfxNullCallback();
+    //bgfx::renderFrame(); // Tells bgfx to NOT create a separate render thread if called before init
     if (!bgfx::init(init))
     {
         std::cout << "ERROR: failed to initialize bgfx\n";
         return EXIT_FAILURE;
     }
-
-    bgfx::setDebug(BGFX_DEBUG_NONE);
+    bgfx::setDebug(BGFX_DEBUG_TEXT);
     bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030FF, 1.0f, 0);
+    bgfx::setViewRect(0, 0, 0, width, height);
 
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGui_Implbgfx_Init(255); // not sure why it's using 255?  could remove the need for this.
+#if OS_WINDOWS
+    ImGui_ImplSDL3_InitForD3D(sdlWindow);
+#elif OS_MAC
+    ImGui_ImplSDL3_InitForMetal(sdlWindow);
+#elif OS_LINUX
+    ImGui_ImplSDL3_InitForVulkan(sdlWindow);
+#endif
+
+    std::cout << "Rendering with " << bgfx::getRendererName(bgfx::getRendererType()) << "\n";
+
+    int counter = 0;
+    bool doStuff = true;
+    bool showStats = false;
+    while (doStuff)
+    {
+        counter++;
+
+        // Events
+        SDL_Event event;
+        while (SDL_PollEvent(&event))
+        {
+            ImGui_ImplSDL3_ProcessEvent(&event);
+            switch (event.type)
+            {
+                case SDL_EVENT_QUIT:
+                    doStuff = false;
+                    break;
+                case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+                    if (event.window.windowID == SDL_GetWindowID(sdlWindow))
+                        doStuff = false;
+                    break;
+                case SDL_EVENT_WINDOW_RESIZED:
+                {
+                    SDL_GetWindowSize(sdlWindow, &width, &height);
+                    bgfx::reset(width, height, BGFX_RESET_NONE);
+                    bgfx::setViewRect(0, 0, 0, width, height);
+                }
+                case SDL_EVENT_KEY_DOWN:
+                {
+                    // If ImGui is using the keyboard, then don't process keyboard events
+                    if (ImGui::GetIO().WantCaptureKeyboard)
+                        continue;
+                    
+                    if (event.key.key == SDLK_SPACE)
+                    {
+                        showStats = !showStats;
+                        bgfx::setDebug(showStats ? BGFX_DEBUG_STATS : BGFX_DEBUG_TEXT);
+                    }
+                }
+                default: break;
+            }
+        }
+
+        // Sleep if window is not visible
+        if (SDL_GetWindowFlags(sdlWindow) & SDL_WINDOW_MINIMIZED)
+        {
+            SDL_Delay(10);
+            continue;
+        }
+
+        const bgfx::Stats* stats = bgfx::getStats();
+        uint16_t x = std::max<uint16_t>(uint16_t(stats->textWidth/2), 20) - 20;
+        uint16_t y = std::max<uint16_t>(uint16_t(stats->textHeight/2), 6) - 6;
+        
+        bgfx::touch(0);
+        bgfx::dbgTextClear();
+        if (!showStats)
+        {
+            bgfx::dbgTextPrintf(0, 0, 0x70, " Press SPACE to toggle bgfx render stats ");
+        }
+
+        ImGui_Implbgfx_NewFrame();
+        ImGui_ImplSDL3_NewFrame();
+        ImGui::NewFrame();
+        ImGui::ShowDemoWindow();
+        ImGui::Render();
+        ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
+
+        bgfx::frame();
+    }
+
+    ImGui_ImplSDL3_Shutdown();
+    ImGui_Implbgfx_Shutdown();
+    ImGui::DestroyContext();
     bgfx::shutdown();
     SDL_DestroyWindow(sdlWindow);
     SDL_Quit();
 
-    std::cout << "Success!\n";
     return EXIT_SUCCESS;
 }
