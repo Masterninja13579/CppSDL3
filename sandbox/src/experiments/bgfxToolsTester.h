@@ -1,6 +1,7 @@
 #pragma once
 
 #include "bgfxTools.h"
+#include "platform/platform.h"
 
 #include <iostream>
 #include <sstream>
@@ -64,7 +65,13 @@ int bgfxToolTest(bgfxTool tool)
             bgfxTools::ShaderOptions options;
             options.inputFilePath = "./vs_cubes.sc";
             options.outputFilePath = "abcd.bin";
+#ifdef OS_WINDOWS
             options.shaderProfile = bgfxTools::ShaderOptions::Profile::HLSL_4_0;
+#elif OS_MAC
+            options.shaderProfile = bgfxTools::ShaderOptions::Profile::MSL;
+#elif OS_LINUX
+            options.shaderProfile = bgfxTools::ShaderOptions::Profile::SPIRV;
+#endif
             options.includePaths.push_back("./");
             options.preprocessorDefines.push_back("FLOAT_ONE=1.0");
 

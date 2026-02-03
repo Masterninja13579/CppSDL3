@@ -1,13 +1,13 @@
 #include "bgfxTools.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(__Win32__) || defined(__NT__)
-#define OS_WINDOWS
+#define OS_WINDOWS 1
 #define SUFFIX ".exe"
 #elif __APPLE__
-#define OS_MAC
+#define OS_MAC 1
 #define SUFFIX ""
 #elif __linux__
-#define OS_LINUX
+#define OS_LINUX 1
 #define SUFFIX ""
 #else
 #error "Unsupported Operating System"
@@ -15,10 +15,8 @@
 
 #include <subprocess.hpp>
 
-// #include <iostream>
 #include <functional>
 #include <sstream>
-// #include <stdexcept>
 
 namespace
 {
