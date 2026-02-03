@@ -2,7 +2,6 @@
 #include "experiments/windowTest.h"
 #include "experiments/stateMachineTests.h"
 
-#include "libraries/window/window.h"
 #include <iostream>
 
 int main(int argc, char** argv)

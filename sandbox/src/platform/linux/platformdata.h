@@ -1,6 +1,6 @@
 #pragma once
 
-bool Platform_SetLinuxPlatformData(SDL_PropertiesID& id, bgfx::PlatformData& pd)
+inline bool Platform_SetLinuxPlatformData(SDL_PropertiesID& id, bgfx::PlatformData& pd)
 {
     void* ptr = SDL_GetPointerProperty(id, SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
     if (ptr)

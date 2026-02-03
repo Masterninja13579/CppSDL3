@@ -23,7 +23,7 @@
     #define PLATFORM_BGFX_RENDERERTYPE bgfx::RendererType::Metal;
 #endif
 
-#ifdef OS_LINUX 
+#ifdef OS_LINUX
     #include "platform/linux/platformdata.h"
     #define PLATFORM_SDL_RENDER_FLAG SDL_WINDOW_VULKAN
     #define PLATFORM_BGFX_RENDERERTYPE bgfx::RendererType::Vulkan;

@@ -4,6 +4,31 @@
 
 using namespace Application;
 
+namespace
+{
+	struct BgfxNullCallback : public bgfx::CallbackI
+	{
+		virtual void fatal(const char* _filePath, uint16_t _line, bgfx::Fatal::Enum _code, const char* _str) override {}
+		virtual void traceVargs(const char* _filePath, uint16_t _line, const char* _format, va_list _argList) override {}
+		virtual void profilerBegin(const char* _name, uint32_t _abgr, const char* _filePath, uint16_t _line) override {}
+		virtual void profilerBeginLiteral(const char* _name, uint32_t _abgr, const char* _filePath, uint16_t _line) override {}
+		virtual void profilerEnd() override {}
+		virtual uint32_t cacheReadSize(uint64_t _id) override { return 0; }
+		virtual bool cacheRead(uint64_t _id, void* _data, uint32_t _size) override { return false; }
+		virtual void cacheWrite(uint64_t _id, const void* _data, uint32_t _size) override {}
+		virtual void screenShot(const char* _filePath, uint32_t _width, uint32_t _height, uint32_t _pitch, const void* _data, uint32_t _size, bool _yflip) override {}
+		virtual void captureBegin(uint32_t _width, uint32_t _height, uint32_t _pitch, bgfx::TextureFormat::Enum _format, bool _yflip) override {}
+		virtual void captureEnd() override {}
+		virtual void captureFrame(const void* _data, uint32_t _size) override {}
+	};
+
+	BgfxNullCallback* GetBgfxNullCallback()
+	{
+		static BgfxNullCallback callback;
+		return &callback;
+	}
+}
+
 Window::Window(const char* name)
 	: mName(name)
 	, mWidth(1280)
@@ -84,7 +109,7 @@ void Window::InitBgfx()
 	pd.nwh = SDL_GetPointerProperty(sdlPropertiesId, SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
 	pd.ndt = NULL;
 #elif OS_LINUX
-	if (!setLinuxPlatformData(sdlPropertiesId, pd))
+	if (!Platform_SetLinuxPlatformData(sdlPropertiesId, pd))
 	{
 		std::cout << "ERROR: failed to identify linux platform data\n";
 		return;
@@ -105,7 +130,7 @@ void Window::InitBgfx()
 	init.platformData.ndt = pd.ndt;
 	init.resolution.width = mWidth;
 	init.resolution.height = mHeight;
-	//init.callback = new BgfxNullCallback();
+	init.callback = GetBgfxNullCallback();
 	if (!bgfx::init(init))
 	{
 		std::cout << "ERROR: failed to initialize bgfx\n";
