@@ -151,9 +151,13 @@ namespace BehaviorStateMachine
 		/// <returns></returns>
 		bool Contains(const State& state)
 		{
-			for (auto it = mStatesById.begin(); it != mStatesById.end(); ++it)
+			//for (auto it = mStatesById.begin(); it != mStatesById.end(); ++it)
+			//{
+			//	if (it->second == state) { return true; }
+			//}
+			for (auto pair : mStatesById)
 			{
-				if (it->second == state) { return true; }
+				if (pair->second == state) { return true; }
 			}
 			return false;
 		}
@@ -175,9 +179,13 @@ namespace BehaviorStateMachine
 		std::vector<State> GetAllStates()
 		{
 			std::vector<State> allStates;
-			for (auto it = mStatesById.begin(); it != mStatesById.end(); ++it)
+			//for (auto it = mStatesById.begin(); it != mStatesById.end(); ++it)
+			//{
+			//	allStates.push_back(it->second);
+			//}
+			for (auto pair : mStatesById)
 			{
-				allStates.push_back(it->second);
+				allStates.push_back(pair->second);
 			}
 			return allStates;
 		}
