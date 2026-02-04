@@ -1,33 +1,9 @@
 
 #include "window.h"
+
 #include <iostream>
 
 using namespace Application;
-
-namespace
-{
-	struct BgfxNullCallback : public bgfx::CallbackI
-	{
-		virtual void fatal(const char* _filePath, uint16_t _line, bgfx::Fatal::Enum _code, const char* _str) override {}
-		virtual void traceVargs(const char* _filePath, uint16_t _line, const char* _format, va_list _argList) override {}
-		virtual void profilerBegin(const char* _name, uint32_t _abgr, const char* _filePath, uint16_t _line) override {}
-		virtual void profilerBeginLiteral(const char* _name, uint32_t _abgr, const char* _filePath, uint16_t _line) override {}
-		virtual void profilerEnd() override {}
-		virtual uint32_t cacheReadSize(uint64_t _id) override { return 0; }
-		virtual bool cacheRead(uint64_t _id, void* _data, uint32_t _size) override { return false; }
-		virtual void cacheWrite(uint64_t _id, const void* _data, uint32_t _size) override {}
-		virtual void screenShot(const char* _filePath, uint32_t _width, uint32_t _height, uint32_t _pitch, const void* _data, uint32_t _size, bool _yflip) override {}
-		virtual void captureBegin(uint32_t _width, uint32_t _height, uint32_t _pitch, bgfx::TextureFormat::Enum _format, bool _yflip) override {}
-		virtual void captureEnd() override {}
-		virtual void captureFrame(const void* _data, uint32_t _size) override {}
-	};
-
-	BgfxNullCallback* GetBgfxNullCallback()
-	{
-		static BgfxNullCallback callback;
-		return &callback;
-	}
-}
 
 Window::Window(const char* name)
 	: mName(name)
@@ -51,19 +27,51 @@ Window::Window(const char* name, int width, int height, SDL_WindowFlags flags)
 
 }
 
+void Window::PrintSDLFlags(const SDL_WindowFlags& flags)
+{
+	std::cout << "Window Flags\n";
+	for (auto it = WindowFlagMap.begin(); it != WindowFlagMap.end(); ++it)
+	{
+		if (flags & it->first)
+			std::cout << "   " << it->second << "\n";
+	}
+}
+
 const char*		Window::GetName() { return mName; }
 int				Window::GetWidth() { return mWidth; }
 int				Window::GetHeight() { return mHeight; }
 SDL_WindowFlags	Window::GetSDLWindowFlags() { return SDL_GetWindowFlags(mSDLWindow); }
 SDL_WindowID	Window::GetSDLWindowId() { return SDL_GetWindowID(mSDLWindow); }
-//SDL_Window*	Window::GetSDLWindow() { return mSDLWindow;  }
+bool			Window::IsFullScreen()
+{
+	Uint64 flags = GetSDLWindowFlags();
+	return flags & SDL_WINDOW_FULLSCREEN;
+}
+bool Window::IsBorderless()
+{
+	Uint64 flags = GetSDLWindowFlags();
+	return flags & SDL_WINDOW_BORDERLESS;
+}
+bool Window::IsWindowed()
+{
+	Uint64 flags = GetSDLWindowFlags();
+	return !(flags & SDL_WINDOW_BORDERLESS) && !(flags & SDL_WINDOW_FULLSCREEN);
+}
+bool Window::IsMinimized()
+{
+	Uint64 flags = GetSDLWindowFlags();
+	return flags & SDL_WINDOW_MINIMIZED;
+}
+bool Window::IsMaximized()
+{
+	Uint64 flags = GetSDLWindowFlags();
+	return flags & SDL_WINDOW_MAXIMIZED;
+}
 
 
 void Window::Create()
 {
 	if (mIsShown) return;
-
-	InitSDL();
 
 	mSDLWindow = SDL_CreateWindow(mName, mWidth, mHeight, mFlags);
 	
@@ -101,13 +109,31 @@ void Window::Resize(int width, int height)
 	Refresh();
 }
 
-
-
-void Window::InitSDL()
+void Window::SetFullScreen()
 {
-    if (SDL_Init(SDL_INIT_VIDEO) < 0)
-		std::cout << "ERROR: failed to initialize SDL video subsystem.\n";
+	SDL_SetWindowFullscreen(mSDLWindow, true);
 }
+
+void Window::SetFullScreen(const SDL_DisplayMode& fullScreenDisplayMode)
+{
+	SDL_SetWindowBordered(mSDLWindow, false);
+	SDL_SetWindowFullscreen(mSDLWindow, true);
+	SDL_SetWindowFullscreenMode(mSDLWindow, &fullScreenDisplayMode);
+}
+
+void Window::SetWindowed()
+{
+	SDL_SetWindowBordered(mSDLWindow, true);
+	SDL_SetWindowFullscreen(mSDLWindow, false);
+}
+
+void Window::SetBorderless()
+{
+	SDL_SetWindowBordered(mSDLWindow, false);
+	SDL_SetWindowFullscreen(mSDLWindow, false);
+}
+
+
 
 void Window::InitBgfx()
 {
@@ -117,7 +143,7 @@ void Window::InitBgfx()
 	pd.nwh = SDL_GetPointerProperty(sdlPropertiesId, SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
 	pd.ndt = NULL;
 #elif OS_LINUX
-	if (!Platform_SetLinuxPlatformData(sdlPropertiesId, pd))
+	if (!setLinuxPlatformData(sdlPropertiesId, pd))
 	{
 		std::cout << "ERROR: failed to identify linux platform data\n";
 		return;
@@ -138,7 +164,7 @@ void Window::InitBgfx()
 	init.platformData.ndt = pd.ndt;
 	init.resolution.width = mWidth;
 	init.resolution.height = mHeight;
-	init.callback = GetBgfxNullCallback();
+	init.callback = new BgfxNullCallback();
 	if (!bgfx::init(init))
 	{
 		std::cout << "ERROR: failed to initialize bgfx\n";

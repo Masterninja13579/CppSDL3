@@ -1,16 +1,31 @@
 #pragma once
 
 #include "core.h"
-#include "bgfxExamples/logo.h"
+#include "logo.h"
 #include "window.h"
 
 #include <iostream>
 
+struct BgfxNullCallback : public bgfx::CallbackI
+{
+		virtual void fatal(const char* _filePath, uint16_t _line, bgfx::Fatal::Enum _code, const char* _str) override {}
+		virtual void traceVargs(const char* _filePath, uint16_t _line, const char* _format, va_list _argList) override {}
+		virtual void profilerBegin(const char* _name, uint32_t _abgr, const char* _filePath, uint16_t _line) override {}
+		virtual void profilerBeginLiteral(const char* _name, uint32_t _abgr, const char* _filePath, uint16_t _line) override {}
+		virtual void profilerEnd() override {}
+		virtual uint32_t cacheReadSize(uint64_t _id) override { return 0; }
+		virtual bool cacheRead(uint64_t _id, void* _data, uint32_t _size) override { return false; }
+		virtual void cacheWrite(uint64_t _id, const void* _data, uint32_t _size) override {}
+		virtual void screenShot(const char* _filePath, uint32_t _width, uint32_t _height, uint32_t _pitch, const void* _data, uint32_t _size, bool _yflip) override {}
+		virtual void captureBegin(uint32_t _width, uint32_t _height, uint32_t _pitch, bgfx::TextureFormat::Enum _format, bool _yflip) override {}
+		virtual void captureEnd() override {}
+		virtual void captureFrame(const void* _data, uint32_t _size) override {}
+};
 
 int windowTest()
 {
     //Create window
-    Application::Window window("Application Window Test");
+    Application::Window window = Application::Window::Window("Application Window Test", 1280, 720, PLATFORM_SDL_RENDER_FLAG);
     window.Create();
 
     std::cout << "Rendering with " << bgfx::getRendererName(bgfx::getRendererType()) << "\n";
@@ -21,11 +36,11 @@ int windowTest()
     bool doStuff = true;
     while (doStuff)
     {
-        counter++;
-        std::cout << counter << "\n";
+        //counter++;
+        //std::cout << counter << "\n";
 
         // Sleep if window is not visible
-        if (window.GetSDLWindowFlags() & SDL_WINDOW_MINIMIZED)
+        if (window.IsMinimized())
         {
             SDL_Delay(10);
             continue;
@@ -51,7 +66,23 @@ int windowTest()
         ImGui_Implbgfx_NewFrame();
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
-        ImGui::ShowDemoWindow();
+        //ImGui::ShowDemoWindow();
+        bool doFullScreenToggle = ImGui::Button("Toggle Fullscreen", ImVec2(240, 24));
+        if (doFullScreenToggle)
+        {
+            if (window.IsFullScreen())
+                window.SetWindowed();
+            else
+            {
+                SDL_DisplayMode mode;
+                window.SetFullScreen(mode);
+            }
+        }
+        bool doPrintFlags = ImGui::Button("Print Window Flags", ImVec2(240, 24));
+        if (doPrintFlags)
+        {
+            Application::Window::PrintSDLFlags(window.GetSDLWindowFlags());
+        }
         ImGui::Render();
         ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
 
