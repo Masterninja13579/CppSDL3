@@ -31,6 +31,7 @@ namespace Application
 		SDL_Window* mSDLWindow;
 		bool mIsShown;
 
+		void InitSDL();
 		void InitBgfx();
 		void InitImGui();
 	};

@@ -63,6 +63,8 @@ void Window::Create()
 {
 	if (mIsShown) return;
 
+	InitSDL();
+
 	mSDLWindow = SDL_CreateWindow(mName, mWidth, mHeight, mFlags);
 	
 	InitBgfx();
@@ -100,6 +102,12 @@ void Window::Resize(int width, int height)
 }
 
 
+
+void Window::InitSDL()
+{
+    if (SDL_Init(SDL_INIT_VIDEO) < 0)
+		std::cout << "ERROR: failed to initialize SDL video subsystem.\n";
+}
 
 void Window::InitBgfx()
 {
