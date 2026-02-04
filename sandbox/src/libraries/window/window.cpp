@@ -73,6 +73,8 @@ void Window::Create()
 {
 	if (mIsShown) return;
 
+	InitSDL();
+
 	mSDLWindow = SDL_CreateWindow(mName, mWidth, mHeight, mFlags);
 	
 	InitBgfx();
@@ -134,6 +136,12 @@ void Window::SetBorderless()
 }
 
 
+
+void Window::InitSDL()
+{
+	if (!SDL_Init(SDL_INIT_CAMERA))
+		std::cout << "SDL init failed!";
+}
 
 void Window::InitBgfx()
 {
