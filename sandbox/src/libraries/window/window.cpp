@@ -151,7 +151,7 @@ void Window::InitBgfx()
 	pd.nwh = SDL_GetPointerProperty(sdlPropertiesId, SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
 	pd.ndt = NULL;
 #elif OS_LINUX
-	if (!setLinuxPlatformData(sdlPropertiesId, pd))
+	if (!Platform_SetLinuxPlatformData(sdlPropertiesId, pd))
 	{
 		std::cout << "ERROR: failed to identify linux platform data\n";
 		return;

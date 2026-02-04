@@ -9,7 +9,7 @@
 int windowTest()
 {
     //Create window
-    Application::Window window = Application::Window::Window("Application Window Test", 1280, 720, PLATFORM_SDL_RENDER_FLAG);
+    Application::Window window("Application Window Test", 1280, 720, PLATFORM_SDL_RENDER_FLAG);
     window.Create();
 
     std::cout << "Rendering with " << bgfx::getRendererName(bgfx::getRendererType()) << "\n";
