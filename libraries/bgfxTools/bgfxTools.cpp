@@ -121,12 +121,22 @@ namespace
         using subprocess::RunBuilder;
         using subprocess::PipeOption;
 
-        CompletedProcess process = subprocess::run(
-            arguments,
-            RunBuilder()
-                .cout(PipeOption::pipe)
-                .cerr(PipeOption::pipe)
-        );
+        CompletedProcess process;
+
+        try
+        {
+            process = subprocess::run(
+                arguments,
+                RunBuilder()
+                    .cout(PipeOption::pipe)
+                    .cerr(PipeOption::pipe)
+            );
+        }
+        catch(const std::exception& e)
+        {
+            *error = e.what();
+            return process.returncode;
+        }
 
         if (output)
             *output = process.cout;
@@ -141,7 +151,7 @@ namespace bgfxTools
 {
     void SetToolDirectoryPath(const std::string& path)
     {
-        g_toolPath = path;
+        g_toolPath = "./" + path;
     }
 
     bool CompileShader(
