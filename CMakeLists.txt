@@ -8,5 +8,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 project(CppSDL3 VERSION 0.1.0 LANGUAGES C CXX)
 
+# Library folders
 add_subdirectory(vendor)
+add_subdirectory(libraries)
+
+# projects
 add_subdirectory(sandbox)

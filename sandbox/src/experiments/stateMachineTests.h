@@ -1,6 +1,6 @@
 #pragma once
 
-#include "libraries/behaviorStates/behaviorStateMachine.h"
+#include "behaviorStates/behaviorStateMachine.h"
 
 #include <iostream>
 #include <string>

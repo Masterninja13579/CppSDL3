@@ -1,6 +1,6 @@
 #pragma once
 
-#include "bgfxTools.h"
+#include "bgfxTools/bgfxTools.h"
 #include "platform/platform.h"
 
 #include <iostream>

@@ -1,5 +1,5 @@
 
-#include "window.h"
+#include "window/window.h"
 
 #include <iostream>
 
@@ -125,7 +125,7 @@ void Window::SetFullScreen(const SDL_DisplayMode& fullScreenDisplayMode)
 
 void Window::SetWindowed()
 {
-	SDL_SetWindowBordered(mSDLWindow, true);
+	bool result = SDL_SetWindowBordered(mSDLWindow, true);
 	SDL_SetWindowFullscreen(mSDLWindow, false);
 }
 

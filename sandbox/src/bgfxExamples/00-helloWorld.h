@@ -1,7 +1,5 @@
 #pragma once
 
-#include "core.h"
-
 #include "logo.h"
 
 #include <iostream>

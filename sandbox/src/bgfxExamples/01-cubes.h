@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core.h"
-#include "window.h"
+#include "window/window.h"
 
 #include <iostream>
 

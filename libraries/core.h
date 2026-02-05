@@ -4,7 +4,7 @@
 
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
-#include <imgui_impl_bgfx.h>
+#include <imgui-bgfx/imgui_impl_bgfx.h>
 
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>

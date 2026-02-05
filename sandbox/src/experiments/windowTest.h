@@ -1,8 +1,9 @@
 #pragma once
 
 #include "core.h"
+
 #include "bgfxExamples/logo.h"
-#include "window.h"
+#include "window/window.h"
 
 #include <iostream>
 
@@ -20,8 +21,8 @@ int windowTest()
     bool doStuff = true;
     while (doStuff)
     {
-        //counter++;
-        //std::cout << counter << "\n";
+        // counter++;
+        // std::cout << counter << "\n";
 
         // Sleep if window is not visible
         if (window.IsMinimized())
@@ -90,6 +91,8 @@ int windowTest()
                     break;
                 case SDL_EVENT_WINDOW_RESIZED:
                 {
+                    std::cout << "Refreshed\n";
+
                     window.Refresh();
                     break;
                 }
