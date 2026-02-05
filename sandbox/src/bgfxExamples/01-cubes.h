@@ -3,6 +3,11 @@
 #include "core.h"
 #include "window/window.h"
 
+#include "vs_cubes_dx11.h"
+#include "vs_cubes_spirv.h"
+#include "fs_cubes_dx11.h"
+#include "fs_cubes_spirv.h"
+
 #include <iostream>
 
 namespace
@@ -106,7 +111,7 @@ namespace
         "Triangle Strip",
         "Lines",
         "Line Strip",
-        "Points",
+        "Points"
     };
 
     static const uint64_t s_ptState[]
@@ -125,7 +130,7 @@ namespace
 int bgfxCubes()
 {
     //Create window
-    Application::Window window("Application Window Test");
+    Application::Window window("Cubes");
     window.Create();
 
     std::cout << "Rendering with " << bgfx::getRendererName(bgfx::getRendererType()) << "\n";
@@ -167,13 +172,31 @@ int bgfxCubes()
 		bgfx::makeRef(s_cubePoints, sizeof(s_cubePoints))
 	);
 
-    // bgfx::ShaderHandle vertexShaderHandle;
-    // bgfx::ShaderHandle fragmentShaderHandle;
-    // bgfx::ProgramHandle shaderProgramHandle = bgfx::createProgram(
-    //     vertexShaderHandle,
-    //     fragmentShaderHandle,
-    //     true
-    // );
+#ifdef OS_WINDOWS
+    const bgfx::Memory* vShaderData = bgfx::alloc(vs_cubes_dx11_size + 1);
+    std::memcpy(vShaderData->data, vs_cubes_dx11, vs_cubes_dx11_size);
+    vShaderData->data[vShaderData->size - 1] = '\0';
+
+    const bgfx::Memory* fShaderData = bgfx::alloc(fs_cubes_dx11_size + 1);
+    std::memcpy(fShaderData->data, fs_cubes_dx11, fs_cubes_dx11_size);
+    fShaderData->data[fShaderData->size - 1] = '\0';
+#else OS_LINUX
+    const bgfx::Memory* vShaderData = bgfx::alloc(fs_cubes_spirv_size + 1);
+    std::memcpy(vShaderData->data, vs_cubes_spirv, fs_cubes_spirv_size);
+    vShaderData->data[vShaderData->size - 1] = '\0';
+
+    const bgfx::Memory* fShaderData = bgfx::alloc(fs_cubes_spirv_size + 1);
+    std::memcpy(fShaderData->data, fs_cubes_spirv, fs_cubes_spirv_size);
+    fShaderData->data[fShaderData->size - 1] = '\0';
+#endif
+    bgfx::ShaderHandle vertexShaderHandle = bgfx::createShader(vShaderData);
+    //bgfx::ShaderHandle fragmentShaderHandle = BGFX_INVALID_HANDLE;
+    bgfx::ShaderHandle fragmentShaderHandle = bgfx::createShader(fShaderData);
+    bgfx::ProgramHandle shaderProgramHandle = bgfx::createProgram(
+        vertexShaderHandle,
+        fragmentShaderHandle,
+        true
+    );
 
     //Create loop
     int counter = 0;
@@ -182,7 +205,7 @@ int bgfxCubes()
     while (doStuff)
     {
         counter++;
-        std::cout << counter << "\n";
+        //std::cout << counter << "\n";
 
         // Sleep if window is not visible
         if (window.GetSDLWindowFlags() & SDL_WINDOW_MINIMIZED)
@@ -228,6 +251,21 @@ int bgfxCubes()
                 default: break;
             }
         }
+
+
+        // Set view and projection matrix for view 0.
+        //{
+        //    float view[16];
+        //    bx::mtxLookAt(view, eye, at);
+
+        //    float proj[16];
+        //    bx::mtxProj(proj, 60.0f, float(m_width) / float(m_height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+        //    bgfx::setViewTransform(0, view, proj);
+
+        //    // Set view 0 default viewport.
+        //    bgfx::setViewRect(0, 0, 0, uint16_t(m_width), uint16_t(m_height));
+        //}
+
 
     }
 

@@ -10,7 +10,7 @@ int main(int argc, char** argv)
 {
     try
     {
-       int result = bgfxToolTest();
+       int result = bgfxCubes();
        std::cout << (result == EXIT_SUCCESS ? "Success!\n" : "Failure!\n");
        return result;
     }
