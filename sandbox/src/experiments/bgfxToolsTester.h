@@ -3,6 +3,7 @@
 #include "bgfxTools/bgfxTools.h"
 #include "platform/platform.h"
 
+#include <filesystem>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -36,6 +37,10 @@ namespace
 
 int bgfxToolTest()
 {
+    bgfxTools::SetToolDirectoryPath("../");
+
+    std::cout << "Current path: " << std::filesystem::current_path() << "\n";
+
     std::string output = "";
     std::string error = "";
     bool result = false;
