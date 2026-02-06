@@ -386,7 +386,7 @@ int bgfxCubes()
             continue;
         }
 
-        // Events
+        // -------- Events --------
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
@@ -396,11 +396,9 @@ int bgfxCubes()
             {
                 case SDL_EVENT_QUIT:
                     doStuff = false;
-                    //window.Destroy();
                     break;
                 case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
                     doStuff = false;
-                    //window.Destroy();
                     break;
                 case SDL_EVENT_WINDOW_RESIZED:
                 {
@@ -424,10 +422,26 @@ int bgfxCubes()
             }
         }
 
+        // -------- ImGui --------
+        ImGui_Implbgfx_NewFrame();
+        ImGui_ImplSDL3_NewFrame();
+        ImGui::NewFrame();
+        ImGui::Begin("Settings", NULL, 0);
+        ImGui::Checkbox("Write R", &red);
+        ImGui::Checkbox("Write G", &green);
+        ImGui::Checkbox("Write B", &blue);
+        ImGui::Checkbox("Write A", &alpha);
+        ImGui::Text("Primitive topology");
+        ImGui::Combo("##topology", &pt, s_ptNames, BX_COUNTOF(s_ptNames));
+        ImGui::End();
+        ImGui::Render();
+
+        // -------- Rendering --------
         const bx::Vec3 at  = { 0.0f, 0.0f,   0.0f };
         const bx::Vec3 eye = { 0.0f, 0.0f, -35.0f };
         const int width = window.GetWidth();
         const int height = window.GetHeight();
+
         // Set view and projection matrix for view 0.
         {
            float view[16];
@@ -485,6 +499,7 @@ int bgfxCubes()
 
         // Advance to next frame. Rendering thread will be kicked to
         // process submitted rendering primitives.
+        ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
         bgfx::frame();
     }
 
