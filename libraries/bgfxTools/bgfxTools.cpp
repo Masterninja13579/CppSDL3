@@ -15,14 +15,25 @@
 
 #include <subprocess.hpp>
 
+#include <filesystem>
+#include <fstream>
 #include <functional>
 #include <sstream>
 
+// Constants
 namespace
 {
-    std::string g_toolPath = "./";
+    static const char* FILE_COMMON_NAME = "common.sh";
+    static const int FILE_COMMON_SIZE = 0;
+    static const uint8_t FILE_COMMON_CONTENT[1] = { 0 };
+    static const char* FILE_BGFXSHADER_NAME = "bgfx_shader.sh";
+    static const int FILE_BGFXSHADER_SIZE = 0;
+    static const uint8_t FILE_BGFXSHADER_CONTENT[1] = { 0 };
+    static const char* FILE_SHADERLIB_NAME = "shaderlib.sh";
+    static const int FILE_SHADERLIB_SIZE = 0;
+    static const uint8_t FILE_SHADERLIB_CONTENT[1] = { 0 };
 
-    const std::string SHADEROPTIONS_PLATFORM[] =
+    static const std::string SHADEROPTIONS_PLATFORM[] =
     {
         "android",
         "asm.js",
@@ -32,7 +43,7 @@ namespace
         "osx",
         "windows"
     };
-    const std::string SHADEROPTIONS_PROFILE[] =
+    static const std::string SHADEROPTIONS_PROFILE[] =
     {
         "100_es",       // OpenGL ES Shading Language / WebGL (ESSL)
         "300_es",
@@ -76,26 +87,26 @@ namespace
 
         "wgsl"          // WGSL
     };
-    const std::string SHADEROPTIONS_TYPE[] =
+    static const std::string SHADEROPTIONS_TYPE[] =
     {
         "vertex",
         "fragment",
         "compute"
     };
-    const std::string GEOMETRYOPTIONS_COORDINATE[] =
+    static const std::string GEOMETRYOPTIONS_COORDINATE[] =
     {
         "-lh-up+y",
         "-lh-up+z",
         "-rh-up+y",
         "-rh-up+z"
     };
-    const std::string TEXTUREOPTIONS_QUALITY[] =
+    static const std::string TEXTUREOPTIONS_QUALITY[] =
     {
         "default",
         "fastest",
         "highest"
     };
-    const std::string TEXTUREOPTIONS_LIGHTINGMODEL[] =
+    static const std::string TEXTUREOPTIONS_LIGHTINGMODEL[] =
     {
         "phong",
         "phongbrdf",
@@ -103,7 +114,7 @@ namespace
         "blinnbrdf",
         "ggx"
     };
-    const std::string TEXTUREOPTIONS_EXTENSIONS[] =
+    static const std::string TEXTUREOPTIONS_EXTENSIONS[] =
     {
         ".ktx",
         ".dds",
@@ -111,6 +122,12 @@ namespace
         ".exr",
         ".hdr"
     };
+}
+
+// Utilities
+namespace
+{
+    std::string g_toolPath = "./";
 
     int runProgram(
         std::vector<std::string>& arguments,
@@ -145,13 +162,110 @@ namespace
 
         return process.returncode;
     }
+
+    bool writeFile(
+        const std::string& path, 
+        const uint8_t* content,
+        int contentSize)
+    {
+        std::ofstream fileStream(path);
+        if (fileStream.fail())
+            return false;
+        
+        fileStream.write((const char*)content, contentSize);
+        fileStream.flush();
+        fileStream.close();
+        return true;
+    }
 }
+
 
 namespace bgfxTools
 {
-    void SetToolDirectoryPath(const std::string& path)
+    void SetToolDirectoryPath(
+        const std::string& path,
+        bool relative)
     {
-        g_toolPath = "./" + path;
+        if (relative)
+            g_toolPath = "./" + path;
+        else
+            g_toolPath = path;
+    }
+
+    bool CompileShaderFromString(
+        const std::string& source,
+        ShaderOptions& options,
+        std::string* output,
+        std::string* error,
+        bool writeLibraries)
+    {
+        namespace fs = std::filesystem;
+
+        static std::mutex mutex;
+        static int count = 0;
+
+        bool writeCommon = false;
+        bool writeBgfxShader= false;
+        bool writeShaderLib = false;
+
+        if (options.inputFilePath.size() == 0)
+        {
+            if (error)
+                *error = "No file path provided.";
+            return false;
+        }
+
+        if (writeLibraries)
+        {
+            std::lock_guard<std::mutex> lock(mutex);
+            if (count == 0)
+            {
+                // Write common library files
+                writeCommon = !fs::exists(FILE_COMMON_NAME);
+                writeBgfxShader = !fs::exists(FILE_BGFXSHADER_NAME);
+                writeShaderLib = !fs::exists(FILE_SHADERLIB_NAME);
+
+                if (writeCommon)
+                    writeFile(
+                        g_toolPath + FILE_COMMON_NAME,
+                        FILE_COMMON_CONTENT,
+                        FILE_COMMON_SIZE);
+                if (writeBgfxShader)
+                    writeFile(
+                        g_toolPath + FILE_BGFXSHADER_NAME,
+                        FILE_BGFXSHADER_CONTENT,
+                        FILE_BGFXSHADER_SIZE);
+                if (writeShaderLib)
+                    writeFile(
+                        g_toolPath + FILE_SHADERLIB_NAME,
+                        FILE_SHADERLIB_CONTENT,
+                        FILE_SHADERLIB_SIZE);
+            }
+            count++;
+        }
+
+        // Write source to file
+
+        bool result = CompileShader(options, output, error);
+
+        if (writeLibraries)
+        {
+            std::lock_guard<std::mutex> lock(mutex);
+            count--;
+            if (count == 0)
+            {
+                // Remove common library files
+                // Don't remove them if they already existed
+                if (writeCommon)
+                    fs::remove(g_toolPath + FILE_COMMON_NAME);
+                if (writeBgfxShader)
+                    fs::remove(g_toolPath + FILE_BGFXSHADER_NAME);
+                if (writeShaderLib)
+                    fs::remove(g_toolPath + FILE_SHADERLIB_NAME);
+            }
+        }
+
+        return result;
     }
 
     bool CompileShader(

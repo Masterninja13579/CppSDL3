@@ -279,6 +279,9 @@ namespace bgfxTools
         Coordinates coordinates = Coordinates::LeftHandedYUp;
     };
 
+    /// <summary>
+    /// Options for CompileTexture function.
+    /// </summary>
     struct TextureOptions
     {
         enum class Quality
@@ -409,7 +412,18 @@ namespace bgfxTools
         bool validate = false;
     };
     
-    void SetToolDirectoryPath(const std::string& path);
+    void SetToolDirectoryPath(
+        const std::string& path,
+        bool relative = true
+    );
+
+    bool CompileShaderFromString(
+        const std::string& source,
+        ShaderOptions& options,
+        std::string* output = nullptr,
+        std::string* error = nullptr,
+        bool writeCommonLibraries = true
+    );
 
     bool CompileShader(
         ShaderOptions& options,
