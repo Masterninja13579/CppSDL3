@@ -439,7 +439,7 @@ int bgfxCubes()
         // -------- Rendering --------
         const float speedMultiplier = 1.0f;
         const float distanceMultiplier = 30.0f;
-        const float x = sin(timeDuration * speedMultiplier) * distanceMultiplier;
+        const float x = bx::sin(timeDuration * speedMultiplier) * distanceMultiplier;
         const bx::Vec3 at  = { x, 0.0f,   0.0f };
         const bx::Vec3 eye = { 0.0f, x, x * 0.5f - 35.0f };
         const int width = window.GetWidth();
