@@ -2,11 +2,13 @@
 
 #include "core.h"
 #include "window/window.h"
+#include "bgfxTools/bgfxTools.h"
 
 #include <bx/math.h>
 #include <bx/timer.h>
 
 #include <cstring>
+#include <fstream>
 #include <iostream>
 
 // Shaders
@@ -337,9 +339,62 @@ int bgfxCubes()
 		bgfx::makeRef(s_cubePoints, sizeof(s_cubePoints))
 	);
 
-    const bgfx::Memory* vShaderData = bgfx::alloc(vsCubesSize + 1);
-    std::memcpy(vShaderData->data, vsCubes, vsCubesSize);
-    vShaderData->data[vShaderData->size - 1] = '\0';
+    {
+        std::string varyingSource =
+            "vec4 v_color0    : COLOR0    = vec4(1.0, 0.0, 0.0, 1.0);\n"
+            "\n"
+            "vec3 a_position  : POSITION;\n"
+            "vec4 a_color0    : COLOR0;";
+        std::ofstream file("varying.def.sc");
+        file.write(varyingSource.c_str(), varyingSource.size());
+    }
+    std::string vShaderSource = 
+        "$input a_position, a_color0\n"
+        "$output v_color0\n"
+        "\n"
+        "/*\n"
+        " * Copyright 2011-2026 Branimir Karadzic. All rights reserved.\n"
+        " * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE\n"
+        " */\n"
+        "\n"
+        "#include \"./common.sh\"\n"
+        "\n"
+        "void main()\n"
+        "{\n"
+        "	gl_Position = mul(u_modelViewProj, vec4(a_position, 1.0) );\n"
+        "	v_color0 = a_color0;\n"
+        "}\n";
+    bgfxTools::StringShaderOptions vShaderOptions;
+    bgfxTools::SetToolDirectoryPath("../");
+    bgfx::Memory* vShaderData = nullptr;
+    std::string toolOutput;
+    std::string toolError;
+    bool compileResult = bgfxTools::CompileShaderFromString(
+        vShaderSource,
+        vShaderOptions,
+        &vShaderData,
+        &toolOutput,
+        &toolError);
+    if (!compileResult)
+    {
+        std::cout << "Vertex shader compilation failed:\n";
+        if (toolOutput.size() > 0)
+        {
+            std::cout << "-------- Output --------\n";
+            std::cout << toolOutput << "\n";
+        }
+        if (toolError.size() > 0)
+        {
+            std::cout << "-------- Error --------\n";
+            std::cout << toolError << "\n";
+        }
+        window.Destroy();
+        return EXIT_FAILURE;
+    }
+
+    // const bgfx::Memory* vShaderData = bgfx::alloc(vsCubesSize + 1);
+    // std::memcpy(vShaderData->data, vsCubes, vsCubesSize);
+    // vShaderData->data[vShaderData->size - 1] = '\0';
 
     const bgfx::Memory* fShaderData = bgfx::alloc(fsCubesSize + 1);
     std::memcpy(fShaderData->data, fsCubes, fsCubesSize);

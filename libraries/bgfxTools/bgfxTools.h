@@ -1,5 +1,7 @@
 #pragma once
 
+#include "core.h"
+
 #include <bimg/bimg.h>
 
 #include <string>
@@ -152,7 +154,7 @@ namespace bgfxTools
         std::vector<std::string> preprocessorDefines;
 
         /// <summary>
-        /// Do not process hsader.  No preprocessor, and no glsl-optimizer.  (GLSL only)
+        /// Do not process header.  No preprocessor, and no glsl-optimizer.  (GLSL only)
         /// </summary>
         bool raw = false;
 
@@ -192,6 +194,56 @@ namespace bgfxTools
         bool warnAsError = false;
     };
 
+    /// <summary>
+    /// Options for the CompileShaderFromString function
+    /// </summary>
+    struct StringShaderOptions
+    {
+        /// <summary>
+        /// Include path.
+        /// </summary>
+        std::vector<std::string> includePaths;
+
+        /// <summary>
+        /// Write result to output.
+        /// </summary>
+        bool writeOutput = false;
+
+        /// <summary>
+        /// Do not discard comments.
+        /// </summary>
+        bool keepComments = false;
+
+        /// <summary>
+        /// Add defines to preprocessor.
+        /// </summary>
+        std::vector<std::string> preprocessorDefines;
+
+        /// <summary>
+        /// Shader type.
+        /// </summary>
+        ShaderOptions::Type type = ShaderOptions::Type::Vertex;
+
+        /// <summary>
+        /// Set a varying.def.sc's file path
+        /// </summary>
+        std::string varyingFilePath = "";
+
+        /// <summary>
+        /// Be verbose.
+        /// </summary>
+        bool verbose = false;
+
+        /// <summary>
+        /// Debug information.  (Vulkan, DirectX, and Metal)
+        /// </summary>
+        bool debug = false;
+
+        /// <summary>
+        /// Set optimization level.  (DirectX only)
+        /// </summary>
+        ShaderOptions::DXOptimizeLevel optimize = ShaderOptions::DXOptimizeLevel::None;
+    };
 
     /// <summary>
     /// Options for CompileGeometry function.
@@ -278,7 +330,7 @@ namespace bgfxTools
         /// </summary>
         Coordinates coordinates = Coordinates::LeftHandedYUp;
     };
-
+    
     /// <summary>
     /// Options for CompileTexture function.
     /// </summary>
@@ -419,7 +471,8 @@ namespace bgfxTools
 
     bool CompileShaderFromString(
         const std::string& source,
-        ShaderOptions& options,
+        StringShaderOptions& options,
+        bgfx::Memory** destination,
         std::string* output = nullptr,
         std::string* error = nullptr,
         bool writeCommonLibraries = true

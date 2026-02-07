@@ -25,7 +25,7 @@
 namespace
 {
     static const char* FILE_COMMON_NAME = "common.sh";
-    static const char* FILE_COMMON_CONTENT = /* Generated with bin2c. */
+    static const char* FILE_COMMON_CONTENT =
         "/*\n"
         " * Copyright 2011-2026 Branimir Karadzic. All rights reserved.\n"
         " * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE\n"
@@ -36,7 +36,7 @@ namespace
         "";
     static const int FILE_COMMON_SIZE = strlen(FILE_COMMON_CONTENT);
     static const char* FILE_BGFXSHADER_NAME = "bgfx_shader.sh";
-    static const char* FILE_BGFXSHADER_CONTENT = /* Generated with bin2c. */
+    static const char* FILE_BGFXSHADER_CONTENT = 
         "/*\n"
         " * Copyright 2011-2026 Branimir Karadzic. All rights reserved.\n"
         " * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE\n"
@@ -61,15 +61,15 @@ namespace
         "#	define UNROLL [unroll]\n"
         "#endif // BGFX_SHADER_LANGUAGE_GLSL\n"
         "\n"
-        "#define BGFX_SHADER_MATRIX_COLUMN_MAJOR (0 \\"
-        "	|| BGFX_SHADER_LANGUAGE_GLSL           \\"
-        "	|| BGFX_SHADER_LANGUAGE_WGSL           \\"
+        "#define BGFX_SHADER_MATRIX_COLUMN_MAJOR (0 \\\n"
+        "	|| BGFX_SHADER_LANGUAGE_GLSL           \\\n"
+        "	|| BGFX_SHADER_LANGUAGE_WGSL           \\\n"
         "	)\n"
         "\n"
         "#if BGFX_SHADER_TYPE_FRAGMENT\n"
-        "#	if BGFX_SHADER_LANGUAGE_HLSL  \\"
-        "	|| BGFX_SHADER_LANGUAGE_METAL \\"
-        "	|| BGFX_SHADER_LANGUAGE_SPIRV \\"
+        "#	if BGFX_SHADER_LANGUAGE_HLSL  \\\n"
+        "	|| BGFX_SHADER_LANGUAGE_METAL \\\n"
+        "	|| BGFX_SHADER_LANGUAGE_SPIRV \\\n"
         "	|| BGFX_SHADER_LANGUAGE_WGSL\n"
         "#		define EARLY_DEPTH_STENCIL [earlydepthstencil]\n"
         "	#else\n"
@@ -85,10 +85,10 @@ namespace
         "#	define ARRAY_END() }\n"
         "#endif // BGFX_SHADER_LANGUAGE_GLSL\n"
         "\n"
-        "#if BGFX_SHADER_LANGUAGE_HLSL  \\"
-        " || BGFX_SHADER_LANGUAGE_PSSL  \\"
-        " || BGFX_SHADER_LANGUAGE_SPIRV \\"
-        " || BGFX_SHADER_LANGUAGE_METAL \\"
+        "#if BGFX_SHADER_LANGUAGE_HLSL  \\\n"
+        " || BGFX_SHADER_LANGUAGE_PSSL  \\\n"
+        " || BGFX_SHADER_LANGUAGE_SPIRV \\\n"
+        " || BGFX_SHADER_LANGUAGE_METAL \\\n"
         " || BGFX_SHADER_LANGUAGE_WGSL\n"
         "#	define CONST(_x) static const _x\n"
         "#	define dFdx(_x) ddx(_x)\n"
@@ -102,29 +102,29 @@ namespace
         "\n"
         "// To be able to patch the uav registers on the DXBC SPDB Chunk (D3D11 renderer) the whitespaces around\n"
         "// '_type[_reg]' are necessary. This only affects shaders with debug info (i.e., those that have the SPDB Chunk).\n"
-        "#	if BGFX_SHADER_LANGUAGE_HLSL > 400                     \\"
-        "	|| BGFX_SHADER_LANGUAGE_PSSL                           \\"
-        "	|| BGFX_SHADER_LANGUAGE_SPIRV                          \\"
-        "	|| BGFX_SHADER_LANGUAGE_METAL                          \\"
+        "#	if BGFX_SHADER_LANGUAGE_HLSL > 400                     \\\n"
+        "	|| BGFX_SHADER_LANGUAGE_PSSL                           \\\n"
+        "	|| BGFX_SHADER_LANGUAGE_SPIRV                          \\\n"
+        "	|| BGFX_SHADER_LANGUAGE_METAL                          \\\n"
         "	|| BGFX_SHADER_LANGUAGE_WGSL\n"
         "#		define REGISTER(_type, _reg) register( _type[_reg] )\n"
         "#	else\n"
         "#		define REGISTER(_type, _reg) register(_type ##     _reg)\n"
         "#	endif // BGFX_SHADER_LANGUAGE_*\n"
         "\n"
-        "#	if BGFX_SHADER_LANGUAGE_HLSL > 400 \\"
-        "	|| BGFX_SHADER_LANGUAGE_PSSL       \\"
-        "	|| BGFX_SHADER_LANGUAGE_SPIRV      \\"
-        "	|| BGFX_SHADER_LANGUAGE_METAL      \\"
+        "#	if BGFX_SHADER_LANGUAGE_HLSL > 400 \\\n"
+        "	|| BGFX_SHADER_LANGUAGE_PSSL       \\\n"
+        "	|| BGFX_SHADER_LANGUAGE_SPIRV      \\\n"
+        "	|| BGFX_SHADER_LANGUAGE_METAL      \\\n"
         "	|| BGFX_SHADER_LANGUAGE_WGSL\n"
         "#		define dFdxCoarse(_x) ddx_coarse(_x)\n"
         "#		define dFdxFine(_x)   ddx_fine(_x)\n"
         "#		define dFdyCoarse(_y) ddy_coarse(-(_y))\n"
         "#		define dFdyFine(_y)   ddy_fine(-(_y))\n"
         "\n"
-        "#		if BGFX_SHADER_LANGUAGE_HLSL  \\"
-        "		|| BGFX_SHADER_LANGUAGE_SPIRV \\"
-        "		|| BGFX_SHADER_LANGUAGE_METAL \\"
+        "#		if BGFX_SHADER_LANGUAGE_HLSL  \\\n"
+        "		|| BGFX_SHADER_LANGUAGE_SPIRV \\\n"
+        "		|| BGFX_SHADER_LANGUAGE_METAL \\\n"
         "		|| BGFX_SHADER_LANGUAGE_WGSL\n"
         "float intBitsToFloat(int   _x) { return asfloat(_x); }\n"
         "vec2  intBitsToFloat(uint2 _x) { return asfloat(_x); }\n"
@@ -487,15 +487,15 @@ namespace
         "	return result;\n"
         "}\n"
         "\n"
-        "#		define SAMPLER2D(_name, _reg) \\"
-        "			uniform SamplerState _name ## Sampler : REGISTER(s, _reg); \\"
-        "			uniform Texture2D _name ## Texture : REGISTER(t, _reg); \\"
+        "#		define SAMPLER2D(_name, _reg) \\\n"
+        "			uniform SamplerState _name ## Sampler : REGISTER(s, _reg); \\\n"
+        "			uniform Texture2D _name ## Texture : REGISTER(t, _reg); \\\n"
         "			static BgfxSampler2D _name = { _name ## Sampler, _name ## Texture }\n"
-        "#		define ISAMPLER2D(_name, _reg) \\"
-        "			uniform Texture2D<ivec4> _name ## Texture : REGISTER(t, _reg); \\"
+        "#		define ISAMPLER2D(_name, _reg) \\\n"
+        "			uniform Texture2D<ivec4> _name ## Texture : REGISTER(t, _reg); \\\n"
         "			static BgfxISampler2D _name = { _name ## Texture }\n"
-        "#		define USAMPLER2D(_name, _reg) \\"
-        "			uniform Texture2D<uvec4> _name ## Texture : REGISTER(t, _reg); \\"
+        "#		define USAMPLER2D(_name, _reg) \\\n"
+        "			uniform Texture2D<uvec4> _name ## Texture : REGISTER(t, _reg); \\\n"
         "			static BgfxUSampler2D _name = { _name ## Texture }\n"
         "#		define sampler2D BgfxSampler2D\n"
         "#		define texture2D(_sampler, _coord) bgfxTexture2D(_sampler, _coord)\n"
@@ -505,61 +505,61 @@ namespace
         "#		define texture2DProj(_sampler, _coord) bgfxTexture2DProj(_sampler, _coord)\n"
         "#		define texture2DGrad(_sampler, _coord, _dPdx, _dPdy) bgfxTexture2DGrad(_sampler, _coord, _dPdx, _dPdy)\n"
         "\n"
-        "#		define SAMPLER2DARRAY(_name, _reg) \\"
-        "			uniform SamplerState _name ## Sampler : REGISTER(s, _reg); \\"
-        "			uniform Texture2DArray _name ## Texture : REGISTER(t, _reg); \\"
+        "#		define SAMPLER2DARRAY(_name, _reg) \\\n"
+        "			uniform SamplerState _name ## Sampler : REGISTER(s, _reg); \\\n"
+        "			uniform Texture2DArray _name ## Texture : REGISTER(t, _reg); \\\n"
         "			static BgfxSampler2DArray _name = { _name ## Sampler, _name ## Texture }\n"
         "#		define sampler2DArray BgfxSampler2DArray\n"
         "#		define texture2DArray(_sampler, _coord) bgfxTexture2DArray(_sampler, _coord)\n"
         "#		define texture2DArrayLod(_sampler, _coord, _lod) bgfxTexture2DArrayLod(_sampler, _coord, _lod)\n"
         "#		define texture2DArrayLodOffset(_sampler, _coord, _level, _offset) bgfxTexture2DArrayLodOffset(_sampler, _coord, _level, _offset)\n"
         "\n"
-        "#		define SAMPLER2DMS(_name, _reg) \\"
-        "			uniform Texture2DMS<vec4> _name ## Texture : REGISTER(t, _reg); \\"
+        "#		define SAMPLER2DMS(_name, _reg) \\\n"
+        "			uniform Texture2DMS<vec4> _name ## Texture : REGISTER(t, _reg); \\\n"
         "			static BgfxSampler2DMS _name = { _name ## Texture }\n"
         "#		define sampler2DMS BgfxSampler2DMS\n"
         "\n"
-        "#		define SAMPLER2DSHADOW(_name, _reg) \\"
-        "			uniform SamplerComparisonState _name ## SamplerComparison : REGISTER(s, _reg); \\"
-        "			uniform Texture2D _name ## Texture : REGISTER(t, _reg); \\"
+        "#		define SAMPLER2DSHADOW(_name, _reg) \\\n"
+        "			uniform SamplerComparisonState _name ## SamplerComparison : REGISTER(s, _reg); \\\n"
+        "			uniform Texture2D _name ## Texture : REGISTER(t, _reg); \\\n"
         "			static BgfxSampler2DShadow _name = { _name ## SamplerComparison, _name ## Texture }\n"
         "#		define sampler2DShadow BgfxSampler2DShadow\n"
         "#		define shadow2D(_sampler, _coord) bgfxShadow2D(_sampler, _coord)\n"
         "#		define shadow2DProj(_sampler, _coord) bgfxShadow2DProj(_sampler, _coord)\n"
         "\n"
-        "#		define SAMPLER2DARRAYSHADOW(_name, _reg) \\"
-        "			uniform SamplerComparisonState _name ## SamplerComparison : REGISTER(s, _reg); \\"
-        "			uniform Texture2DArray _name ## Texture : REGISTER(t, _reg); \\"
+        "#		define SAMPLER2DARRAYSHADOW(_name, _reg) \\\n"
+        "			uniform SamplerComparisonState _name ## SamplerComparison : REGISTER(s, _reg); \\\n"
+        "			uniform Texture2DArray _name ## Texture : REGISTER(t, _reg); \\\n"
         "			static BgfxSampler2DArrayShadow _name = { _name ## SamplerComparison, _name ## Texture }\n"
         "#		define sampler2DArrayShadow BgfxSampler2DArrayShadow\n"
         "#		define shadow2DArray(_sampler, _coord) bgfxShadow2DArray(_sampler, _coord)\n"
         "\n"
-        "#		define SAMPLER3D(_name, _reg) \\"
-        "			uniform SamplerState _name ## Sampler : REGISTER(s, _reg); \\"
-        "			uniform Texture3D _name ## Texture : REGISTER(t, _reg); \\"
+        "#		define SAMPLER3D(_name, _reg) \\\n"
+        "			uniform SamplerState _name ## Sampler : REGISTER(s, _reg); \\\n"
+        "			uniform Texture3D _name ## Texture : REGISTER(t, _reg); \\\n"
         "			static BgfxSampler3D _name = { _name ## Sampler, _name ## Texture }\n"
-        "#		define ISAMPLER3D(_name, _reg) \\"
-        "			uniform Texture3D<ivec4> _name ## Texture : REGISTER(t, _reg); \\"
+        "#		define ISAMPLER3D(_name, _reg) \\\n"
+        "			uniform Texture3D<ivec4> _name ## Texture : REGISTER(t, _reg); \\\n"
         "			static BgfxISampler3D _name = { _name ## Texture }\n"
-        "#		define USAMPLER3D(_name, _reg) \\"
-        "			uniform Texture3D<uvec4> _name ## Texture : REGISTER(t, _reg); \\"
+        "#		define USAMPLER3D(_name, _reg) \\\n"
+        "			uniform Texture3D<uvec4> _name ## Texture : REGISTER(t, _reg); \\\n"
         "			static BgfxUSampler3D _name = { _name ## Texture }\n"
         "#		define sampler3D BgfxSampler3D\n"
         "#		define texture3D(_sampler, _coord) bgfxTexture3D(_sampler, _coord)\n"
         "#		define texture3DLod(_sampler, _coord, _level) bgfxTexture3DLod(_sampler, _coord, _level)\n"
         "\n"
-        "#		define SAMPLERCUBE(_name, _reg) \\"
-        "			uniform SamplerState _name ## Sampler : REGISTER(s, _reg); \\"
-        "			uniform TextureCube _name ## Texture : REGISTER(t, _reg); \\"
+        "#		define SAMPLERCUBE(_name, _reg) \\\n"
+        "			uniform SamplerState _name ## Sampler : REGISTER(s, _reg); \\\n"
+        "			uniform TextureCube _name ## Texture : REGISTER(t, _reg); \\\n"
         "			static BgfxSamplerCube _name = { _name ## Sampler, _name ## Texture }\n"
         "#		define samplerCube BgfxSamplerCube\n"
         "#		define textureCube(_sampler, _coord) bgfxTextureCube(_sampler, _coord)\n"
         "#		define textureCubeBias(_sampler, _coord, _bias) bgfxTextureCubeBias(_sampler, _coord, _bias)\n"
         "#		define textureCubeLod(_sampler, _coord, _level) bgfxTextureCubeLod(_sampler, _coord, _level)\n"
         "\n"
-        "#		define SAMPLERCUBESHADOW(_name, _reg) \\"
-        "			uniform SamplerComparisonState _name ## SamplerComparison : REGISTER(s, _reg); \\"
-        "			uniform TextureCube _name ## Texture : REGISTER(t, _reg); \\"
+        "#		define SAMPLERCUBESHADOW(_name, _reg) \\\n"
+        "			uniform SamplerComparisonState _name ## SamplerComparison : REGISTER(s, _reg); \\\n"
+        "			uniform TextureCube _name ## Texture : REGISTER(t, _reg); \\\n"
         "			static BgfxSamplerCubeShadow _name = { _name ## SamplerComparison, _name ## Texture }\n"
         "#		define samplerCubeShadow BgfxSamplerCubeShadow\n"
         "#		define shadowCube(_sampler, _coord) bgfxShadowCube(_sampler, _coord)\n"
@@ -708,11 +708,11 @@ namespace
         "vec3 vec3_splat(float _x) { return vec3(_x, _x, _x); }\n"
         "vec4 vec4_splat(float _x) { return vec4(_x, _x, _x, _x); }\n"
         "\n"
-        "#if BGFX_SHADER_LANGUAGE_GLSL >= 130 \\"
-        " || BGFX_SHADER_LANGUAGE_HLSL        \\"
-        " || BGFX_SHADER_LANGUAGE_PSSL        \\"
-        " || BGFX_SHADER_LANGUAGE_SPIRV       \\"
-        " || BGFX_SHADER_LANGUAGE_METAL       \\"
+        "#if BGFX_SHADER_LANGUAGE_GLSL >= 130 \\\n"
+        " || BGFX_SHADER_LANGUAGE_HLSL        \\\n"
+        " || BGFX_SHADER_LANGUAGE_PSSL        \\\n"
+        " || BGFX_SHADER_LANGUAGE_SPIRV       \\\n"
+        " || BGFX_SHADER_LANGUAGE_METAL       \\\n"
         " || BGFX_SHADER_LANGUAGE_WGSL\n"
         "uvec2 uvec2_splat(uint _x) { return uvec2(_x, _x); }\n"
         "uvec3 uvec3_splat(uint _x) { return uvec3(_x, _x, _x); }\n"
@@ -873,7 +873,7 @@ namespace
         "";
     static const int FILE_BGFXSHADER_SIZE = strlen(FILE_BGFXSHADER_CONTENT);
     static const char* FILE_SHADERLIB_NAME = "shaderlib.sh";
-    static const char* FILE_SHADERLIB_CONTENT = /* Generated with bin2c. */
+    static const char* FILE_SHADERLIB_CONTENT = 
         "/*\n"
         " * Copyright 2011-2026 Branimir Karadzic. All rights reserved.\n"
         " * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE\n"
@@ -1455,6 +1455,26 @@ namespace
         fileStream.close();
         return true;
     }
+
+    bool readFile(
+        const std::string& path,
+        bgfx::Memory** destination)
+    {
+        std::ifstream file(path, std::ios::binary | std::ios::ate);
+        if (!file.is_open())
+            return false;
+        
+        int size = file.tellg();
+        if (size < 0)
+            return false;
+
+        file.seekg(0, std::ios::beg);
+        *destination = (bgfx::Memory*)bgfx::alloc(size + 1);
+        file.read((char*)(*destination)->data, size);
+        (*destination)->data[size] = 0;
+
+        return true;
+    }
 }
 
 
@@ -1472,7 +1492,8 @@ namespace bgfxTools
 
     bool CompileShaderFromString(
         const std::string& source,
-        ShaderOptions& options,
+        StringShaderOptions& options,
+        bgfx::Memory** destination,
         std::string* output,
         std::string* error,
         bool writeLibraries)
@@ -1486,13 +1507,6 @@ namespace bgfxTools
         bool writeBgfxShader= false;
         bool writeShaderLib = false;
 
-        if (options.inputFilePath.size() == 0)
-        {
-            if (error)
-                *error = "No file path provided.";
-            return false;
-        }
-
         if (writeLibraries)
         {
             std::lock_guard<std::mutex> lock(mutex);
@@ -1505,26 +1519,79 @@ namespace bgfxTools
 
                 if (writeCommon)
                     writeFile(
-                        g_toolPath + FILE_COMMON_NAME,
+                        FILE_COMMON_NAME,
                         FILE_COMMON_CONTENT,
                         FILE_COMMON_SIZE);
                 if (writeBgfxShader)
                     writeFile(
-                        g_toolPath + FILE_BGFXSHADER_NAME,
+                        FILE_BGFXSHADER_NAME,
                         FILE_BGFXSHADER_CONTENT,
                         FILE_BGFXSHADER_SIZE);
                 if (writeShaderLib)
                     writeFile(
-                        g_toolPath + FILE_SHADERLIB_NAME,
+                        FILE_SHADERLIB_NAME,
                         FILE_SHADERLIB_CONTENT,
                         FILE_SHADERLIB_SIZE);
             }
             count++;
         }
 
-        // Write source to file
+        // Set up file names
+        std::string inputFile;
+        std::string outputFile;
+        {
+            std::stringstream ss;
+            ss << "input" << std::this_thread::get_id() << ".sc";
+            inputFile = ss.str();
+        }
+        {
+            std::stringstream ss;
+            ss << "output" << std::this_thread::get_id() << ".bin";
+            outputFile = ss.str();
+        }
+        
+        // Write input file
+        writeFile(
+            inputFile,
+            source.c_str(),
+            source.size());
+        
+        // Configure shader options
+        ShaderOptions shaderOptions;
+        shaderOptions.debug = options.debug;
+        shaderOptions.includePaths = options.includePaths;
+        shaderOptions.keepComments = options.keepComments;
+        shaderOptions.optimize = options.optimize;
+        shaderOptions.preprocessorDefines = options.preprocessorDefines;
+        shaderOptions.type = options.type;
+        shaderOptions.varyingFilePath = options.varyingFilePath;
+        shaderOptions.verbose = options.verbose;
+        shaderOptions.writeOutput = options.writeOutput;
+        shaderOptions.inputFilePath = inputFile;
+        shaderOptions.outputFilePath = outputFile;
+        shaderOptions.includePaths.push_back("./");
+#ifdef OS_WINDOWS
+        shaderOptions.targetPlatform = ShaderOptions::Platform::Windows;
+        shaderOptions.shaderProfile = ShaderOptions::Profile::HLSL_4_0;
+#elif OS_MAC
+        shaderOptions.targetPlatform = ShaderOptions::Platform::OSX;
+        shaderOptions.shaderProfile = ShaderOptions::Profile::MSL;
+#elif OS_LINUX
+        shaderOptions.targetPlatform = ShaderOptions::Platform::Linux;
+        shaderOptions.shaderProfile = ShaderOptions::Profile::SPIRV;
+#endif
 
-        bool result = CompileShader(options, output, error);
+        // Call shaderc utility
+        bool result = CompileShader(shaderOptions, output, error);
+
+        // If successful, read and delete output file
+        if (result)
+        {
+            result = readFile(outputFile, destination);
+            fs::remove(outputFile);
+        }
+        // Delete input file
+        fs::remove(inputFile);
 
         if (writeLibraries)
         {
@@ -1535,11 +1602,11 @@ namespace bgfxTools
                 // Remove common library files
                 // Don't remove them if they already existed
                 if (writeCommon)
-                    fs::remove(g_toolPath + FILE_COMMON_NAME);
+                    fs::remove(FILE_COMMON_NAME);
                 if (writeBgfxShader)
-                    fs::remove(g_toolPath + FILE_BGFXSHADER_NAME);
+                    fs::remove(FILE_BGFXSHADER_NAME);
                 if (writeShaderLib)
-                    fs::remove(g_toolPath + FILE_SHADERLIB_NAME);
+                    fs::remove(FILE_SHADERLIB_NAME);
             }
         }
 
