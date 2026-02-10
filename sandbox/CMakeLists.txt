@@ -1,5 +1,7 @@
 add_executable(sandbox
     src/main.cpp
+
+    src/experiments/embedExampleShaders.cpp
 )
 
 include_directories(
