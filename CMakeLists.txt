@@ -14,3 +14,4 @@ add_subdirectory(libraries)
 
 # projects
 add_subdirectory(sandbox)
+add_subdirectory(shaderBuilder)
