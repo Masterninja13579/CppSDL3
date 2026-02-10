@@ -20,8 +20,9 @@ namespace
     };
 
     const std::string VARYING_SOURCE =
-        "vec3 a_position : POSITION;\n"
-        "vec3 v_position : POSITION;";
+        "vec3 v_position : TEXCOORD0;\n"
+        "\n"
+        "vec3 a_position : POSITION;";
     const std::string VERTEX_SHADER_SOURCE =
         "$input a_position\n"
         "$output v_position\n"
