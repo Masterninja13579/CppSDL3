@@ -2,6 +2,7 @@
 
 #include "core.h"
 
+#include <iostream>
 #include <unordered_map>
 #include <string>
 
@@ -85,7 +86,15 @@ namespace Application
 	{
 		struct BgfxNullCallback : public bgfx::CallbackI
 		{
-			virtual void fatal(const char* _filePath, uint16_t _line, bgfx::Fatal::Enum _code, const char* _str) override {}
+			virtual void fatal(const char* _filePath, uint16_t _line, bgfx::Fatal::Enum _code, const char* _str) override
+			{
+				std::cout << "BGFX Fatal Error:\n";
+				std::cout << "    _filePath: " << _filePath << "\n";
+				std::cout << "    _line: " << _line << "\n";
+				std::cout << "    _code: " << _code << "\n";
+				std::cout << "    _str: " << _str << "\n";
+				abort();
+			}
 			virtual void traceVargs(const char* _filePath, uint16_t _line, const char* _format, va_list _argList) override {}
 			virtual void profilerBegin(const char* _name, uint32_t _abgr, const char* _filePath, uint16_t _line) override {}
 			virtual void profilerBeginLiteral(const char* _name, uint32_t _abgr, const char* _filePath, uint16_t _line) override {}

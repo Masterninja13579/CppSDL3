@@ -233,7 +233,8 @@ bool EditorGrid::Initialize()
                  | BGFX_STATE_CULL_CW
                  | BGFX_STATE_MSAA
                  | BGFX_STATE_PT_LINES
-                 | BGFX_STATE_BLEND_SRC_ALPHA;
+                 | BGFX_STATE_BLEND_ALPHA
+                 ;
 
     sVertexLayout
         .begin()
