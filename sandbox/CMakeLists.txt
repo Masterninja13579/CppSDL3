@@ -1,6 +1,10 @@
 add_executable(sandbox
     src/main.cpp
 
+    src/bgfxExamples/00-helloWorld.cpp
+    src/bgfxExamples/01-cubes.cpp
+    src/bgfxExamples/02-metaballs.cpp
+
     src/experiments/embedExampleShaders.cpp
 )
 
