@@ -310,7 +310,7 @@ namespace
                 }, 
                 { 
                     bgfx::RendererType::Count, 
-                    __null, 
+                    nullptr, 
                     0 
                 } 
             } 
@@ -329,7 +329,7 @@ namespace
                 }, 
                 { 
                     bgfx::RendererType::Count, 
-                    __null, 
+                    nullptr, 
                     0 
                 } 
             } 
