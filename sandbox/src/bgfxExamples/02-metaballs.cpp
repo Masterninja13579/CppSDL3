@@ -851,7 +851,7 @@ namespace
 int bgfxMetaballs()
 {
     //Create window
-    Application::Window window("Cubes");
+    Application::Window window("Metaballs");
     window.Create();
 
     uint32_t width = window.GetWidth();

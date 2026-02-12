@@ -16,7 +16,7 @@ int bgfxHelloWorld()
     int width = 1080;
     int height = 720;
     SDL_Window* sdlWindow = SDL_CreateWindow(
-        "SDL3 + bgfx + ImGui",
+        "HelloWorld",
         width,
         height,
         SDL_WINDOW_RESIZABLE | PLATFORM_SDL_RENDER_FLAG);
