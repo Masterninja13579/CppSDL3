@@ -1,7 +1,9 @@
 
-#include "experiments/windowTest.h"
-#include "experiments/stateMachineTests.h"
 #include "experiments/bgfxToolsTester.h"
+#include "experiments/embedExampleShaders.h"
+#include "experiments/stateMachineTests.h"
+#include "experiments/windowTest.h"
+
 #include "bgfxExamples/all.h"
 
 #include <iostream>
@@ -10,7 +12,7 @@ int main(int argc, char** argv)
 {
     try
     {
-       int result = bgfxCubes();
+       int result = bgfxRaymarch();
        std::cout << (result == EXIT_SUCCESS ? "Success!\n" : "Failure!\n");
        return result;
     }
