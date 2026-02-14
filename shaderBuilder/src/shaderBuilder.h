@@ -4,6 +4,7 @@
 #include "window/window.h"
 
 #include "appData.h"
+#include "gui/gui.h"
 
 #include <bx/timer.h>
 
@@ -29,12 +30,19 @@ void handleEvents(AppData& data)
                 data.window->Refresh();
                 break;
             case SDL_EVENT_KEY_DOWN:
-            case SDL_EVENT_KEY_UP:
             {
-                // Don't process keyboard events if ImGui has captured the keyboard
                 if (ImGui::GetIO().WantCaptureKeyboard)
                     break;
+                
+                if (event.key.key == SDLK_SPACE)
+                    data.debugDisableGui = !data.debugDisableGui;
 
+                break;
+            }
+            case SDL_EVENT_KEY_UP:
+            {
+                if (ImGui::GetIO().WantCaptureKeyboard)
+                    break;
                 break;
             }
             case SDL_EVENT_WINDOW_MOUSE_ENTER:
@@ -49,6 +57,8 @@ void handleEvents(AppData& data)
                 break;
             case SDL_EVENT_MOUSE_MOTION:
             {
+                if (ImGui::GetIO().WantCaptureMouse)
+                    break;
                 if (data.mouseInWindow)
                 {
                     if (data.mousePositionX >= 0.0f)
@@ -71,20 +81,18 @@ void handleEvents(AppData& data)
             }
             case SDL_EVENT_MOUSE_BUTTON_UP:
             {
+                if (ImGui::GetIO().WantCaptureMouse)
+                    break;
                 if (event.button.button == SDL_BUTTON_LEFT)
-                {
                     data.mouseGrab = false;
-                    std::cout << "Grab released\n";
-                }
                 break;
             }
             case SDL_EVENT_MOUSE_BUTTON_DOWN:
             {
+                if (ImGui::GetIO().WantCaptureMouse)
+                    break;
                 if (event.button.button == SDL_BUTTON_LEFT && data.mouseInWindow)
-                {
                     data.mouseGrab = true;
-                    std::cout << "Grab pressed\n";
-                }
                 break;
             }
             default: break;
@@ -92,7 +100,7 @@ void handleEvents(AppData& data)
     }
 }
 
-void renderObjects(AppData& data)
+void drawObjects(AppData& data)
 {
     const int width = data.window->GetWidth();
     const int height = data.window->GetHeight();
@@ -111,6 +119,32 @@ void renderObjects(AppData& data)
     bgfx::touch(0);
 
     data.grid->render();
+}
+
+void drawGui(AppData& data)
+{
+    data.drawGui = true;
+
+    ImGui_Implbgfx_NewFrame();
+    ImGui_ImplSDL3_NewFrame();
+    ImGui::NewFrame();
+
+    ImGui::ShowDemoWindow();
+
+    GUI::DoGui(data);
+
+    ImGui::Render();
+    ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
+}
+
+void render(AppData& data)
+{
+    if (data.drawGui)
+    {
+        ImGui::Render();
+        ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
+        data.drawGui = false;
+    }
 
     bgfx::frame();
 }
@@ -146,9 +180,12 @@ int shaderBuilder()
             continue;
         }
 
-        handleEvents(data);
+        handleEvents(data);        
         
-        renderObjects(data);
+        drawObjects(data);
+        if (!data.debugDisableGui)
+            drawGui(data);
+        render(data);
     }
 
     delete data.grid;

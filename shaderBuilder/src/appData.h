@@ -11,6 +11,9 @@
 struct AppData
 {
     bool applicationRun = true;
+    bool drawGui = false;
+
+    bool debugDisableGui = false;
 
     Application::Window* window = nullptr;
     Config config;
