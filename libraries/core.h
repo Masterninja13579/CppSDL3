@@ -2,6 +2,8 @@
 
 #include "platform/platform.h"
 
+#include <nlohmann/json.hpp>
+
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 #include <imgui-bgfx/imgui_impl_bgfx.h>
@@ -28,3 +30,5 @@
     #define PLATFORM_SDL_RENDER_FLAG SDL_WINDOW_VULKAN
     #define PLATFORM_BGFX_RENDERERTYPE bgfx::RendererType::Vulkan;
 #endif
+
+using json = nlohmann::json;
