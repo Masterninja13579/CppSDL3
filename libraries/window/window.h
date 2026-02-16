@@ -2,42 +2,52 @@
 
 #include "core.h"
 
-#include <iostream>
-#include <unordered_map>
+#include <functional>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace Application
 {
 	class Window
 	{
 	public:
-		Window(const char*);
-		Window(const char*, int, int, SDL_WindowFlags);
+		typedef std::function<void(const std::vector<std::string>&)> DialogCallback;
+		typedef std::vector<SDL_DialogFileFilter> Filters;
+
+		Window(const std::string&);
+		Window(const std::string&, int, int, SDL_WindowFlags);
 
 		static void		PrintSDLFlags(const SDL_WindowFlags&);
 
-		const char*		GetName();
-		int				GetWidth();
-		int				GetHeight();
-		SDL_WindowFlags	GetSDLWindowFlags();
-		SDL_WindowID	GetSDLWindowId();
-		bool			IsFullScreen();
-		bool			IsBorderless();
-		bool			IsWindowed();
-		bool			IsMinimized();
-		bool			IsMaximized();
+		const std::string&	GetName();
+		int					GetWidth();
+		int					GetHeight();
+		SDL_WindowFlags		GetSDLWindowFlags();
+		SDL_WindowID		GetSDLWindowId();
+		bool				IsFullScreen();
+		bool				IsBorderless();
+		bool				IsWindowed();
+		bool				IsMinimized();
+		bool				IsMaximized();
+		bool				IsShowingDialog();
 
 		void Create();
 		void Destroy();
 		void Refresh();
 		void Resize(int, int);
+		void SetName(const std::string&);
 		void SetFullScreen();
 		void SetFullScreen(const SDL_DisplayMode&);
 		void SetWindowed();
 		void SetBorderless();
 
+		bool ShowOpenFileDialog(DialogCallback, const std::string&, Filters = {}, bool = false);
+		bool ShowOpenFolderDialog(DialogCallback, const std::string&);
+		bool ShowSaveFileDialog(DialogCallback, const std::string&, Filters = {});
+
 	private:
-		const char* mName;
+		std::string mName;
 		int mWidth;
 		int mHeight;
 		SDL_WindowFlags mFlags;
@@ -45,9 +55,16 @@ namespace Application
 		SDL_Window* mSDLWindow;
 		bool mIsShown;
 
+		bool mIsDialogOpen;
+		DialogCallback mDialogCallback;
+		std::string mDialogPath;
+		Filters mDialogFilters;
+
 		void InitSDL();
 		void InitBgfx();
 		void InitImGui();
+
+		static void SdlDialogCallback(void*, const char* const*, int);
 	};
 
 	/// <summary>
@@ -86,15 +103,7 @@ namespace Application
 	{
 		struct BgfxNullCallback : public bgfx::CallbackI
 		{
-			virtual void fatal(const char* _filePath, uint16_t _line, bgfx::Fatal::Enum _code, const char* _str) override
-			{
-				std::cout << "BGFX Fatal Error:\n";
-				std::cout << "    _filePath: " << _filePath << "\n";
-				std::cout << "    _line: " << _line << "\n";
-				std::cout << "    _code: " << _code << "\n";
-				std::cout << "    _str: " << _str << "\n";
-				abort();
-			}
+			virtual void fatal(const char* _filePath, uint16_t _line, bgfx::Fatal::Enum _code, const char* _str) override {}
 			virtual void traceVargs(const char* _filePath, uint16_t _line, const char* _format, va_list _argList) override {}
 			virtual void profilerBegin(const char* _name, uint32_t _abgr, const char* _filePath, uint16_t _line) override {}
 			virtual void profilerBeginLiteral(const char* _name, uint32_t _abgr, const char* _filePath, uint16_t _line) override {}

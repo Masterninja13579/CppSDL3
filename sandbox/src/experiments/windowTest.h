@@ -9,8 +9,10 @@
 
 int windowTest()
 {
+    char windowName[128] = "Application Window Test";
+
     //Create window
-    Application::Window window("Application Window Test", 1280, 720, PLATFORM_SDL_RENDER_FLAG);
+    Application::Window window(windowName, 1280, 720, PLATFORM_SDL_RENDER_FLAG);
     window.Create();
 
     std::cout << "Rendering with " << bgfx::getRendererName(bgfx::getRendererType()) << "\n";
@@ -51,7 +53,7 @@ int windowTest()
         ImGui_Implbgfx_NewFrame();
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
-        //ImGui::ShowDemoWindow();
+        ImGui::ShowDemoWindow();
         bool doFullScreenToggle = ImGui::Button("Toggle Fullscreen", ImVec2(240, 24));
         if (doFullScreenToggle)
         {
@@ -68,6 +70,65 @@ int windowTest()
         {
             Application::Window::PrintSDLFlags(window.GetSDLWindowFlags());
         }
+        if (ImGui::Button("Show Open File Dialog", ImVec2(240, 24)))
+        {
+            Application::Window::DialogCallback callback = 
+                [](const std::vector<std::string>& results)
+                {
+                    std::cout << "ShowOpenFileDialog results: " << results.size() << "\n";
+                    for (int i = 0; i < results.size(); ++i)
+                        std::cout << i << ".  " << results[i] << "\n";
+                };
+            Application::Window::Filters filters = 
+                {
+                    {"Header Files", "h"},
+                    {"Code Files", "cpp"},
+                    {"All Files", "*"}
+                };
+
+            bool didShowDialog = window.ShowOpenFileDialog(callback, "./", filters, true);
+            std::cout << "window.ShowOpenFileDialog returned " << (didShowDialog ? "true" : "false") << "\n";
+        }
+        if (ImGui::Button("Show Open Folder Dialog", ImVec2(240, 24)))
+        {
+            Application::Window::DialogCallback callback = 
+                [](const std::vector<std::string>& results)
+                {
+                    std::cout << "ShowOpenFolderDialog results: " << results.size() << "\n";
+                    for (int i = 0; i < results.size(); ++i)
+                        std::cout << i << ".  " << results[i] << "\n";
+                };
+
+            bool didShowDialog = window.ShowOpenFolderDialog(callback, "./");
+            std::cout << "window.ShowOpenFolderDialog returned " << (didShowDialog ? "true" : "false") << "\n";
+        }
+        if (ImGui::Button("Show Save File Dialog", ImVec2(240, 24)))
+        {
+            Application::Window::DialogCallback callback = 
+                [](const std::vector<std::string>& results)
+                {
+                    std::cout << "ShowSaveFileDialog results: " << results.size() << "\n";
+                    for (int i = 0; i < results.size(); ++i)
+                        std::cout << i << ".  " << results[i] << "\n";
+                };
+            Application::Window::Filters filters = 
+                {
+                    {"Header Files", "h"},
+                    {"Code Files", "cpp"}
+                };
+
+            bool didShowDialog = window.ShowSaveFileDialog(callback, "./", filters);
+            std::cout << "window.ShowSaveFileDialog returned " << (didShowDialog ? "true" : "false") << "\n";
+        }
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+        ImGui::Text("Window Title");
+        // Using '##' in the label hides the next characters
+        ImGui::InputText("##WindowName", windowName, IM_ARRAYSIZE(windowName));
+        ImGui::SameLine();
+        if (ImGui::Button("Set"))
+            window.SetName(windowName);
         ImGui::Render();
         ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
 

@@ -2,27 +2,30 @@
 #include "window/window.h"
 
 #include <iostream>
+#include <filesystem>
 
 using namespace Application;
 
-Window::Window(const char* name)
+Window::Window(const std::string& name)
 	: mName(name)
 	, mWidth(1280)
 	, mHeight(720)
 	, mFlags(SDL_WINDOW_RESIZABLE | PLATFORM_SDL_RENDER_FLAG)
 	, mIsShown(false)
 	, mSDLWindow(nullptr)
+	, mIsDialogOpen(false)
 {
 
 }
 
-Window::Window(const char* name, int width, int height, SDL_WindowFlags flags)
+Window::Window(const std::string& name, int width, int height, SDL_WindowFlags flags)
 	: mName(name)
 	, mWidth(width)
 	, mHeight(height)
 	, mFlags(flags)
 	, mIsShown(false)
 	, mSDLWindow(nullptr)
+	, mIsDialogOpen(false)
 {
 
 }
@@ -37,12 +40,12 @@ void Window::PrintSDLFlags(const SDL_WindowFlags& flags)
 	}
 }
 
-const char*		Window::GetName() { return mName; }
-int				Window::GetWidth() { return mWidth; }
-int				Window::GetHeight() { return mHeight; }
-SDL_WindowFlags	Window::GetSDLWindowFlags() { return SDL_GetWindowFlags(mSDLWindow); }
-SDL_WindowID	Window::GetSDLWindowId() { return SDL_GetWindowID(mSDLWindow); }
-bool			Window::IsFullScreen()
+const std::string&	Window::GetName() { return mName; }
+int					Window::GetWidth() { return mWidth; }
+int					Window::GetHeight() { return mHeight; }
+SDL_WindowFlags		Window::GetSDLWindowFlags() { return SDL_GetWindowFlags(mSDLWindow); }
+SDL_WindowID		Window::GetSDLWindowId() { return SDL_GetWindowID(mSDLWindow); }
+bool				Window::IsFullScreen()
 {
 	Uint64 flags = GetSDLWindowFlags();
 	return flags & SDL_WINDOW_FULLSCREEN;
@@ -67,6 +70,10 @@ bool Window::IsMaximized()
 	Uint64 flags = GetSDLWindowFlags();
 	return flags & SDL_WINDOW_MAXIMIZED;
 }
+bool Window::IsShowingDialog()
+{
+	return mIsDialogOpen;
+}
 
 
 void Window::Create()
@@ -75,7 +82,7 @@ void Window::Create()
 
 	InitSDL();
 
-	mSDLWindow = SDL_CreateWindow(mName, mWidth, mHeight, mFlags);
+	mSDLWindow = SDL_CreateWindow(mName.c_str(), mWidth, mHeight, mFlags);
 	
 	InitBgfx();
 	InitImGui();
@@ -111,6 +118,12 @@ void Window::Resize(int width, int height)
 	Refresh();
 }
 
+void Window::SetName(const std::string& name)
+{
+	mName = name;
+	SDL_SetWindowTitle(mSDLWindow, mName.c_str());
+}
+
 void Window::SetFullScreen()
 {
 	SDL_SetWindowFullscreen(mSDLWindow, true);
@@ -135,6 +148,66 @@ void Window::SetBorderless()
 	SDL_SetWindowFullscreen(mSDLWindow, false);
 }
 
+
+bool Window::ShowOpenFileDialog(DialogCallback callback, const std::string& defaultPath, Filters filters, bool allowMany)
+{
+	if (mIsDialogOpen)
+		return false;
+
+	mIsDialogOpen = true;
+	mDialogCallback = callback;
+	mDialogPath = std::filesystem::absolute(defaultPath).lexically_normal();
+	mDialogFilters = filters;
+
+	SDL_ShowOpenFileDialog(
+		Window::SdlDialogCallback, 
+		this, 
+		mSDLWindow,
+		&mDialogFilters[0],
+		mDialogFilters.size(),
+		mDialogPath.c_str(),
+		allowMany);
+
+	return true;
+}
+bool Window::ShowOpenFolderDialog(DialogCallback callback, const std::string& defaultPath)
+{
+	if (mIsDialogOpen)
+		return false;
+	
+	mIsDialogOpen = true;
+	mDialogCallback = callback;
+	mDialogPath = std::filesystem::absolute(defaultPath).lexically_normal();
+
+	SDL_ShowOpenFolderDialog(
+		Window::SdlDialogCallback,
+		this,
+		mSDLWindow,
+		mDialogPath.c_str(),
+		false);
+
+	return true;
+}
+bool Window::ShowSaveFileDialog(DialogCallback callback, const std::string& defaultPath, Filters filters)
+{
+	if (mIsDialogOpen)
+		return false;
+	
+	mIsDialogOpen = true;
+	mDialogCallback = callback;
+	mDialogPath = std::filesystem::absolute(defaultPath).lexically_normal();
+	mDialogFilters = filters;
+
+	SDL_ShowSaveFileDialog(
+		Window::SdlDialogCallback,
+		this,
+		mSDLWindow,
+		&mDialogFilters[0],
+		mDialogFilters.size(),
+		mDialogPath.c_str());
+	
+	return true;
+}
 
 
 void Window::InitSDL()
@@ -181,7 +254,6 @@ void Window::InitBgfx()
 	bgfx::setDebug(BGFX_DEBUG_TEXT);
 	bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030FF, 1.0f, 0);
 	bgfx::setViewRect(0, 0, 0, mWidth, mHeight);
-
 }
 
 void Window::InitImGui()
@@ -198,4 +270,21 @@ void Window::InitImGui()
 #endif
 }
 
+void Window::SdlDialogCallback(void* userData, const char* const* fileList, int filterIndex)
+{
+	Window* window = (Window*)userData;
+
+	std::vector<std::string> results;
+	if (fileList)
+	{
+		while (*fileList)
+		{
+			results.push_back(std::string(*fileList));
+			fileList++;
+		}
+	}
+
+	window->mDialogCallback(results);
+	window->mIsDialogOpen = false;
+}
 
