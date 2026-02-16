@@ -12,7 +12,7 @@ int main(int argc, char** argv)
 {
     try
     {
-       int result = bgfxRaymarch();
+       int result = windowTest();
        std::cout << (result == EXIT_SUCCESS ? "Success!\n" : "Failure!\n");
        return result;
     }
