@@ -2,9 +2,11 @@
 
 #include <window/window.h>
 
-#include "config.h"
+#include "models/config.h"
+#include "models/session.h"
 #include "objects/editorCamera.h"
 #include "objects/editorGrid.h"
+#include "utils/fileIO.h"
 
 #include <bx/timer.h>
 
@@ -33,6 +35,8 @@ struct AppData
 
     EditorCamera camera;
     EditorGrid* grid = nullptr;
+
+    Session session;
 
     AppData() {}
 };

@@ -4,13 +4,37 @@
 #include "window/window.h"
 
 #include "appData.h"
-#include "config.h"
+#include "constants.h"
 #include "gui/gui.h"
+#include "models/config.h"
+#include "utils/fileIO.h"
 
 #include <bx/timer.h>
 
 #include <filesystem>
 #include <fstream>
+
+bool initialize(AppData& data)
+{
+    data.window = new Application::Window(APPLICATION_NAME_AND_VERSION);
+    data.window->Create();
+    readJsonFile<Config>("./config.json", data.config);
+    if (!EditorGrid::Initialize())
+        return false;
+    data.grid = new EditorGrid(10, 10);
+    return true;
+}
+void shutdown(AppData& data)
+{
+    writeJsonFile<Config>("./config.json", data.config, true);
+    if (data.grid)
+        delete data.grid;
+    if (data.window)
+    {
+        data.window->Destroy();
+        delete data.window;
+    }
+}
 
 void handleEvents(AppData& data)
 {
@@ -135,7 +159,6 @@ void drawObjects(AppData& data)
 
     data.grid->render();
 }
-
 void drawGui(AppData& data)
 {
     data.drawGui = true;
@@ -151,7 +174,6 @@ void drawGui(AppData& data)
     ImGui::Render();
     ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
 }
-
 void render(AppData& data)
 {
     if (data.drawGui)
@@ -164,63 +186,14 @@ void render(AppData& data)
     bgfx::frame();
 }
 
-template<typename T>
-bool readJsonFile(const std::string& path, T& destination)
-{
-    std::ifstream file(path);
-    if (!file.is_open())
-        return false;
-
-    try
-    {
-        json j;
-        file >> j;
-        destination = j.get<T>();
-        return true;
-    }
-    catch(const std::exception& e)
-    {
-        return false;
-    }
-}
-
-template<typename T>
-bool writeJsonFile(const std::string& path, T& data, bool overwrite = false)
-{
-    if (std::filesystem::exists(path) && !overwrite)
-        return false;
-    
-    std::ofstream file(path);
-    if (!file.is_open())
-        return false;
-    
-    try
-    {
-        json j = data;
-        file << std::setw(4) << j;
-        return true;
-    }
-    catch(const std::exception& e)
-    {
-        return false;
-    }
-}
-
 int shaderBuilder()
 {
-    //Create window
-    Application::Window window("Cubes");
-    window.Create();
-    
     AppData data;
-    data.window = &window;
-    readJsonFile<Config>("./config.json", data.config);
-    if (!EditorGrid::Initialize())
+    if (!initialize(data))
     {
-        window.Destroy();
+        std::cout << "ERROR: Failed to initialize application data\n";
         return EXIT_SUCCESS;
     }
-    data.grid = new EditorGrid(10, 10);
 
     //Create loop
     while (data.applicationRun)
@@ -232,7 +205,7 @@ int shaderBuilder()
         data.timeDuration = bx::toSeconds<float>(data.tickCurrent - data.tickStart);
 
         // Sleep if window is not visible
-        if (window.GetSDLWindowFlags() & SDL_WINDOW_MINIMIZED)
+        if (data.window->GetSDLWindowFlags() & SDL_WINDOW_MINIMIZED)
         {
             SDL_Delay(10);
             continue;
@@ -246,10 +219,7 @@ int shaderBuilder()
         render(data);
     }
 
-    writeJsonFile<Config>("./config.json", data.config, true);
-    
-    delete data.grid;
-    window.Destroy();
+    shutdown(data);
 
     return EXIT_SUCCESS;
 }
