@@ -156,7 +156,7 @@ bool Window::ShowOpenFileDialog(DialogCallback callback, const std::string& defa
 
 	mIsDialogOpen = true;
 	mDialogCallback = callback;
-	mDialogPath = std::filesystem::absolute(defaultPath).lexically_normal();
+	mDialogPath = std::filesystem::absolute(defaultPath).lexically_normal().string();
 	mDialogFilters = filters;
 
 	SDL_ShowOpenFileDialog(
@@ -177,7 +177,7 @@ bool Window::ShowOpenFolderDialog(DialogCallback callback, const std::string& de
 	
 	mIsDialogOpen = true;
 	mDialogCallback = callback;
-	mDialogPath = std::filesystem::absolute(defaultPath).lexically_normal();
+	mDialogPath = std::filesystem::absolute(defaultPath).lexically_normal().string();
 
 	SDL_ShowOpenFolderDialog(
 		Window::SdlDialogCallback,
@@ -195,7 +195,7 @@ bool Window::ShowSaveFileDialog(DialogCallback callback, const std::string& defa
 	
 	mIsDialogOpen = true;
 	mDialogCallback = callback;
-	mDialogPath = std::filesystem::absolute(defaultPath).lexically_normal();
+	mDialogPath = std::filesystem::absolute(defaultPath).lexically_normal().string();
 	mDialogFilters = filters;
 
 	SDL_ShowSaveFileDialog(
