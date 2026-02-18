@@ -6,6 +6,7 @@ add_executable(shaderBuilder
 
     src/gui/gui.cpp
     src/gui/mainMenuBar.cpp
+    src/gui/popups.cpp
 )
 
 include_directories(

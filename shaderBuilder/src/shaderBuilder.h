@@ -19,16 +19,16 @@ bool initialize(AppData& data)
     data.window = new Application::Window(APPLICATION_NAME_AND_VERSION);
     data.window->Create();
     readJsonFile<Config>("./config.json", data.config);
-    if (!EditorGrid::Initialize())
-        return false;
-    data.grid = new EditorGrid(10, 10);
+    // if (!EditorGrid::Initialize())
+    //     return false;
+    // data.grid = new EditorGrid(10, 10);
     return true;
 }
 void shutdown(AppData& data)
 {
     writeJsonFile<Config>("./config.json", data.config, true);
-    if (data.grid)
-        delete data.grid;
+    // if (data.grid)
+    //     delete data.grid;
     if (data.window)
     {
         data.window->Destroy();
@@ -57,16 +57,6 @@ void handleEvents(AppData& data)
             case SDL_EVENT_WINDOW_RESIZED:
                 data.window->Refresh();
                 break;
-            case SDL_EVENT_KEY_DOWN:
-            {
-                if (ImGui::GetIO().WantCaptureKeyboard)
-                    break;
-                
-                if (event.key.key == SDLK_SPACE)
-                    data.debugDisableGui = !data.debugDisableGui;
-
-                break;
-            }
             case SDL_EVENT_KEY_UP:
             {
                 if (ImGui::GetIO().WantCaptureKeyboard)
@@ -139,49 +129,43 @@ void handleEvents(AppData& data)
     }
 }
 
-void drawObjects(AppData& data)
-{
-    const int width = data.window->GetWidth();
-    const int height = data.window->GetHeight();
+// void drawObjects(AppData& data)
+// {
+//     const int width = data.window->GetWidth();
+//     const int height = data.window->GetHeight();
 
-    {
-        float view[16];
-        data.camera.apply(view);
+//     {
+//         float view[16];
+//         data.camera.apply(view);
 
-        float proj[16];
-        bx::mtxProj(proj, 60.0f, float(width) / float(height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
-        bgfx::setViewTransform(0, view, proj);
+//         float proj[16];
+//         bx::mtxProj(proj, 60.0f, float(width) / float(height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+//         bgfx::setViewTransform(0, view, proj);
 
-        bgfx::setViewRect(0, 0, 0, uint16_t(width), uint16_t(height));
-    }
+//         bgfx::setViewRect(0, 0, 0, uint16_t(width), uint16_t(height));
+//     }
 
-    bgfx::touch(0);
+//     bgfx::touch(0);
 
-    data.grid->render();
-}
+//     data.grid->render();
+// }
 void drawGui(AppData& data)
 {
-    data.drawGui = true;
-
     ImGui_Implbgfx_NewFrame();
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
+    
+    DoGui(data);
 
     ImGui::ShowDemoWindow();
-
-    DoGui(data);
 
     ImGui::Render();
     ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
 }
 void render(AppData& data)
 {
-    if (data.drawGui)
-    {
-        ImGui::Render();
-        ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
-        data.drawGui = false;
-    }
+    ImGui::Render();
+    ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
 
     bgfx::frame();
 }
@@ -212,10 +196,7 @@ int shaderBuilder()
         }
 
         handleEvents(data);        
-        
-        drawObjects(data);
-        if (!data.debugDisableGui)
-            drawGui(data);
+        drawGui(data);
         render(data);
     }
 

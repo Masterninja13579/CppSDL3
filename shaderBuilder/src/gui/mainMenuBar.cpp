@@ -1,5 +1,7 @@
 #include "mainMenuBar.h"
 
+#include "constants.h"
+
 namespace GUI
 {
     void DoMainMenuBar(AppData& data)
@@ -9,7 +11,7 @@ namespace GUI
             if (ImGui::BeginMenu("File"))
             {
                 if (ImGui::MenuItem("New", "CTRL+N"))
-                    ImGui::OpenPopup("New Project");
+                    data.openNewProjectPopup = true;
 
                 if (ImGui::MenuItem("Open", "CTRL+O")) {}
                 if (ImGui::MenuItem("Save", "CTRL+S", false, false)) {}
@@ -35,6 +37,7 @@ namespace GUI
                 if (ImGui::MenuItem("Paste", "CTRL+V")) {}
                 ImGui::EndMenu();
             }
+
             ImGui::EndMainMenuBar();
         }
     }

@@ -9,7 +9,7 @@
 struct Session
 {
     std::vector<Project> openProjects;
-    int selectedProject;
+    int selectedProject = 0;
 };
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Session, 

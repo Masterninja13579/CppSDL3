@@ -2,6 +2,7 @@
 
 #include <window/window.h>
 
+#include "constants.h"
 #include "models/config.h"
 #include "models/session.h"
 #include "objects/editorCamera.h"
@@ -13,9 +14,6 @@
 struct AppData
 {
     bool applicationRun = true;
-    bool drawGui = false;
-
-    bool debugDisableGui = false;
 
     Application::Window* window = nullptr;
     Config config;
@@ -34,9 +32,12 @@ struct AppData
     bool mouseGrab = false;
 
     EditorCamera camera;
-    EditorGrid* grid = nullptr;
+    // EditorGrid* grid = nullptr;
 
     Session session;
+
+    bool openNewProjectPopup = false;
+    char newProjectName[PROJECT_NAME_SIZE] = PROJECT_NAME_DEFAULT;
 
     AppData() {}
 };
