@@ -2,7 +2,7 @@
 
 #include <window/window.h>
 
-#include "constants.h"
+#include "defines.h"
 #include "models/config.h"
 #include "models/session.h"
 #include "objects/editorCamera.h"
@@ -38,6 +38,9 @@ struct AppData
 
     bool openNewProjectPopup = false;
     char newProjectName[PROJECT_NAME_SIZE] = PROJECT_NAME_DEFAULT;
+
+    int guiSelectionPanelWidth = GUI_SELECTIONPANEL_DEFAULT_SIZE;
+    int guiOutputPanelHeight = GUI_OUTPUTPANEL_DEFAULT_SIZE;
 
     AppData() {}
 };

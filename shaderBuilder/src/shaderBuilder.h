@@ -4,7 +4,7 @@
 #include "window/window.h"
 
 #include "appData.h"
-#include "constants.h"
+#include "defines.h"
 #include "gui/gui.h"
 #include "models/config.h"
 #include "utils/fileIO.h"
@@ -19,6 +19,10 @@ bool initialize(AppData& data)
     data.window = new Application::Window(APPLICATION_NAME_AND_VERSION);
     data.window->Create();
     readJsonFile<Config>("./config.json", data.config);
+
+    // Disable saving settings to .ini file
+    ImGui::GetIO().IniFilename = NULL;
+
     // if (!EditorGrid::Initialize())
     //     return false;
     // data.grid = new EditorGrid(10, 10);

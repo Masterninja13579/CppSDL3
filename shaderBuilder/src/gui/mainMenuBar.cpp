@@ -1,12 +1,12 @@
 #include "mainMenuBar.h"
 
-#include "constants.h"
+#include "defines.h"
 
 namespace GUI
 {
     void DoMainMenuBar(AppData& data)
     {
-        if (ImGui::BeginMainMenuBar())
+        if (ImGui::BeginMenuBar())
         {
             if (ImGui::BeginMenu("File"))
             {
@@ -38,7 +38,7 @@ namespace GUI
                 ImGui::EndMenu();
             }
 
-            ImGui::EndMainMenuBar();
+            ImGui::EndMenuBar();
         }
     }
 }
