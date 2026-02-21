@@ -8,11 +8,15 @@
 
 struct Session
 {
-    std::vector<Project> openProjects;
-    int selectedProject = 0;
+    Project project;
+
+    bool newShaderTabCreate = true;
+    bool newShaderTabImport = false;
+    int newShaderTypeSelection = 0;
+
+    inline bool isProjectOpen() { return project.name.size() > 0; }
 };
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Session, 
-    openProjects,
-    selectedProject
+    project
 )

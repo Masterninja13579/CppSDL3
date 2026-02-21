@@ -16,31 +16,31 @@ struct AppData
     bool applicationRun = true;
 
     Application::Window* window = nullptr;
-    Config config;
-
-    bx::Ticks tickStart = bx::getNow();
-    bx::Ticks tickCurrent = tickStart;
-    bx::Ticks tickLast = tickStart;
-    float timeDelta = 0.0f;
-    float timeDuration = 0.0f;
-
-    bool mouseInWindow = false;
-    float mousePositionX = -1.0f;
-    float mousePositionY = -1.0f;
-    float mouseXMotion = 0.0f;
-    float mouseYMotion = 0.0f;
-    bool mouseGrab = false;
-
-    EditorCamera camera;
+    
+    // bx::Ticks tickStart = bx::getNow();
+    // bx::Ticks tickCurrent = tickStart;
+    // bx::Ticks tickLast = tickStart;
+    // float timeDelta = 0.0f;
+    // float timeDuration = 0.0f;
+    
+    // bool mouseInWindow = false;
+    // float mousePositionX = -1.0f;
+    // float mousePositionY = -1.0f;
+    // float mouseXMotion = 0.0f;
+    // float mouseYMotion = 0.0f;
+    // bool mouseGrab = false;
+    
+    // EditorCamera camera;
     // EditorGrid* grid = nullptr;
-
+    
+    Config config;
     Session session;
 
-    bool openNewProjectPopup = false;
-    char newProjectName[PROJECT_NAME_SIZE] = PROJECT_NAME_DEFAULT;
+    bool doNewProjectPopup = false;
+    bool doNewShaderPopup = false;
 
-    int guiSelectionPanelWidth = GUI_SELECTIONPANEL_DEFAULT_SIZE;
-    int guiOutputPanelHeight = GUI_OUTPUTPANEL_DEFAULT_SIZE;
+    char newProjectName[PROJECT_NAME_SIZE] = PROJECT_NAME_DEFAULT;
+    char newShaderName[SHADER_NAME_SIZE] = SHADER_NAME_DEFAULT;
 
     AppData() {}
 };

@@ -2,12 +2,22 @@
 
 #include "core.h"
 
+#include "shader.h"
+
 #include <string>
 
 struct Project
 {
-    std::string name;
+    std::string name = "";
+    bool dirty = false;
 
+    std::vector<Shader> shaders;
+    std::vector<char> shaderTab;
+
+    inline Project()
+    {
+
+    }
     inline Project(const std::string& name)
         : name(name)
     {
@@ -16,5 +26,8 @@ struct Project
 };
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Project, 
-    name
+    name,
+    dirty,
+    shaders,
+    shaderTab
 )

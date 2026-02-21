@@ -11,12 +11,12 @@ namespace GUI
             if (ImGui::BeginMenu("File"))
             {
                 if (ImGui::MenuItem("New", "CTRL+N"))
-                    data.openNewProjectPopup = true;
+                    data.doNewProjectPopup = true;
 
                 if (ImGui::MenuItem("Open", "CTRL+O")) {}
                 if (ImGui::MenuItem("Save", "CTRL+S", false, false)) {}
                 if (ImGui::MenuItem("Save As", "CTRL+SHIFT+S", false, false)) {}
-                if (ImGui::MenuItem("Close", "CTRL+W", false, data.session.openProjects.size() > 0))
+                if (ImGui::MenuItem("Close", "CTRL+W", false, data.session.isProjectOpen()))
                 {
                     
                 }

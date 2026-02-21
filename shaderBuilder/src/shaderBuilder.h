@@ -4,6 +4,7 @@
 #include "window/window.h"
 
 #include "appData.h"
+#include "appFunctions.h"
 #include "defines.h"
 #include "gui/gui.h"
 #include "models/config.h"
@@ -18,10 +19,12 @@ bool initialize(AppData& data)
 {
     data.window = new Application::Window(APPLICATION_NAME_AND_VERSION);
     data.window->Create();
-    readJsonFile<Config>("./config.json", data.config);
 
     // Disable saving settings to .ini file
     ImGui::GetIO().IniFilename = NULL;
+
+    //App::LoadConfig(data);
+    //App::LoadSession(data);
 
     // if (!EditorGrid::Initialize())
     //     return false;
@@ -30,7 +33,9 @@ bool initialize(AppData& data)
 }
 void shutdown(AppData& data)
 {
-    writeJsonFile<Config>("./config.json", data.config, true);
+    App::SaveConfig(data);
+    App::SaveSession(data);
+
     // if (data.grid)
     //     delete data.grid;
     if (data.window)
@@ -42,8 +47,8 @@ void shutdown(AppData& data)
 
 void handleEvents(AppData& data)
 {
-    data.mouseXMotion = 0.0f;
-    data.mouseYMotion = 0.0f;
+    // data.mouseXMotion = 0.0f;
+    // data.mouseYMotion = 0.0f;
 
     SDL_Event event;
     while (SDL_PollEvent(&event))
@@ -61,73 +66,73 @@ void handleEvents(AppData& data)
             case SDL_EVENT_WINDOW_RESIZED:
                 data.window->Refresh();
                 break;
-            case SDL_EVENT_KEY_UP:
-            {
-                if (ImGui::GetIO().WantCaptureKeyboard)
-                    break;
-                break;
-            }
-            case SDL_EVENT_WINDOW_MOUSE_ENTER:
-                data.mouseInWindow = true;
-                break;
-            case SDL_EVENT_WINDOW_MOUSE_LEAVE:
-                data.mouseInWindow = false;
-                data.mousePositionX = -1.0f;
-                data.mousePositionY = -1.0f;
-                data.mouseXMotion = 0.0f;
-                data.mouseYMotion = 0.0f;
-                break;
-            case SDL_EVENT_MOUSE_MOTION:
-            {
-                if (ImGui::GetIO().WantCaptureMouse)
-                    break;
-                if (data.mouseInWindow)
-                {
-                    if (data.mousePositionX >= 0.0f)
-                        data.mouseXMotion = event.motion.x - data.mousePositionX;
-                    if (data.mousePositionY)
-                        data.mouseYMotion = event.motion.y - data.mousePositionY;
-                    data.mousePositionX = event.motion.x;
-                    data.mousePositionY = event.motion.y;
+            // case SDL_EVENT_KEY_UP:
+            // {
+            //     if (ImGui::GetIO().WantCaptureKeyboard)
+            //         break;
+            //     break;
+            // }
+            // case SDL_EVENT_WINDOW_MOUSE_ENTER:
+            //     data.mouseInWindow = true;
+            //     break;
+            // case SDL_EVENT_WINDOW_MOUSE_LEAVE:
+            //     data.mouseInWindow = false;
+            //     data.mousePositionX = -1.0f;
+            //     data.mousePositionY = -1.0f;
+            //     data.mouseXMotion = 0.0f;
+            //     data.mouseYMotion = 0.0f;
+            //     break;
+            // case SDL_EVENT_MOUSE_MOTION:
+            // {
+            //     if (ImGui::GetIO().WantCaptureMouse)
+            //         break;
+            //     if (data.mouseInWindow)
+            //     {
+            //         if (data.mousePositionX >= 0.0f)
+            //             data.mouseXMotion = event.motion.x - data.mousePositionX;
+            //         if (data.mousePositionY)
+            //             data.mouseYMotion = event.motion.y - data.mousePositionY;
+            //         data.mousePositionX = event.motion.x;
+            //         data.mousePositionY = event.motion.y;
 
-                    if (data.mouseGrab)
-                    {
-                        data.camera.rotationXZ -= 0.01f * data.mouseXMotion;
-                        data.camera.rotationY = bx::clamp(
-                            data.camera.rotationY + 0.01f * data.mouseYMotion,
-                            -bx::kPiHalf + 0.01f,
-                            bx::kPiHalf - 0.01f);
-                    }
-                }
-                break;
-            }
-            case SDL_EVENT_MOUSE_BUTTON_UP:
-            {
-                if (ImGui::GetIO().WantCaptureMouse)
-                    break;
-                if (event.button.button == SDL_BUTTON_LEFT)
-                    data.mouseGrab = false;
-                break;
-            }
-            case SDL_EVENT_MOUSE_BUTTON_DOWN:
-            {
-                if (ImGui::GetIO().WantCaptureMouse)
-                    break;
-                if (event.button.button == SDL_BUTTON_LEFT && data.mouseInWindow)
-                    data.mouseGrab = true;
-                break;
-            }
-            case SDL_EVENT_MOUSE_WHEEL:
-            {
-                if (ImGui::GetIO().WantCaptureMouse)
-                    break;
+            //         if (data.mouseGrab)
+            //         {
+            //             data.camera.rotationXZ -= 0.01f * data.mouseXMotion;
+            //             data.camera.rotationY = bx::clamp(
+            //                 data.camera.rotationY + 0.01f * data.mouseYMotion,
+            //                 -bx::kPiHalf + 0.01f,
+            //                 bx::kPiHalf - 0.01f);
+            //         }
+            //     }
+            //     break;
+            // }
+            // case SDL_EVENT_MOUSE_BUTTON_UP:
+            // {
+            //     if (ImGui::GetIO().WantCaptureMouse)
+            //         break;
+            //     if (event.button.button == SDL_BUTTON_LEFT)
+            //         data.mouseGrab = false;
+            //     break;
+            // }
+            // case SDL_EVENT_MOUSE_BUTTON_DOWN:
+            // {
+            //     if (ImGui::GetIO().WantCaptureMouse)
+            //         break;
+            //     if (event.button.button == SDL_BUTTON_LEFT && data.mouseInWindow)
+            //         data.mouseGrab = true;
+            //     break;
+            // }
+            // case SDL_EVENT_MOUSE_WHEEL:
+            // {
+            //     if (ImGui::GetIO().WantCaptureMouse)
+            //         break;
 
-                float multiplier = event.wheel.y > 0
-                                 ? 1.0f - data.config.cameraZoomMultiplier
-                                 : 1.0f + data.config.cameraZoomMultiplier; 
-                data.camera.distance *= multiplier;
-                break;
-            }
+            //     float multiplier = event.wheel.y > 0
+            //                      ? 1.0f - data.config.cameraZoomMultiplier
+            //                      : 1.0f + data.config.cameraZoomMultiplier; 
+            //     data.camera.distance *= multiplier;
+            //     break;
+            // }
             default: break;
         }
     }
@@ -187,10 +192,10 @@ int shaderBuilder()
     while (data.applicationRun)
     {
         // Set up time variables
-        data.tickLast = data.tickCurrent;
-        data.tickCurrent = bx::getNow();
-        data.timeDelta = bx::toSeconds<float>(data.tickCurrent - data.tickLast);
-        data.timeDuration = bx::toSeconds<float>(data.tickCurrent - data.tickStart);
+        // data.tickLast = data.tickCurrent;
+        // data.tickCurrent = bx::getNow();
+        // data.timeDelta = bx::toSeconds<float>(data.tickCurrent - data.tickLast);
+        // data.timeDuration = bx::toSeconds<float>(data.tickCurrent - data.tickStart);
 
         // Sleep if window is not visible
         if (data.window->GetSDLWindowFlags() & SDL_WINDOW_MINIMIZED)
