@@ -1,9 +1,11 @@
 #include "gui.h"
 
+#include "appData.h"
+#include "appFunctions.h"
 #include "defines.h"
 #include "mainMenuBar.h"
-#include "selectorPanel.h"
 #include "popups.h"
+#include "selectorPanel.h"
 
 #include <format>
 
@@ -101,16 +103,16 @@ namespace
                 ImGuiTabBarFlags_TabListPopupButton |
                 ImGuiTabBarFlags_NoCloseWithMiddleMouseButton))
             {
-                for (int i = 0; i < data.session.project.shaders.size(); ++i)
+                for (int i = 0; i < data.project.shaders.size(); ++i)
                 {
-                    if (!data.session.project.shaderTab[i])
+                    if (!data.session.shaderTab[i])
                         continue;
                     if (ImGui::BeginTabItem(
-                        data.session.project.shaders[i].name.c_str(),
-                        (bool*)&data.session.project.shaderTab[i],
+                        data.project.shaders[i].name.c_str(),
+                        (bool*)&data.session.shaderTab[i],
                         ImGuiTabItemFlags_None))
                     {
-                        ImGui::Text("This is the %s tab!", data.session.project.shaders[i]);
+                        ImGui::Text("This is the %s tab!", data.project.shaders[i].sourcePath.c_str());
                         ImGui::EndTabItem();
                     }
                 }
@@ -152,7 +154,7 @@ void DoGui(AppData& data)
     {
         GUI::DoMainMenuBar(data);
 
-        if (data.session.isProjectOpen())
+        if (App::IsProjectOpen(data))
             DoProjectLayout(data);
         else
             DoNoProjectLayout(data);

@@ -9,10 +9,7 @@
 struct Project
 {
     std::string name = "";
-    bool dirty = false;
-
     std::vector<Shader> shaders;
-    std::vector<char> shaderTab;
 
     inline Project()
     {
@@ -27,7 +24,5 @@ struct Project
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Project, 
     name,
-    dirty,
-    shaders,
-    shaderTab
+    shaders
 )

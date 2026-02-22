@@ -6,6 +6,22 @@
 
 #include <filesystem>
 
+namespace
+{
+    void RefreshWindowTitle(AppData& data)
+    {
+        std::stringstream ss;
+        ss << APPLICATION_NAME_AND_VERSION;
+        if (data.project.name.size() > 0)
+        {
+            ss << " - " << data.project.name;
+            if (data.isProjectDirty)
+                ss << "*";
+        }
+        data.window->SetName(ss.str());
+    }
+}
+
 namespace App
 {
     bool LoadConfig(AppData& data)
@@ -25,25 +41,38 @@ namespace App
         return writeJsonFile<Session>(APPLICATION_SESSION_FILEPATH, data.session, true);
     }
 
-    bool LoadProject(const std::string& path, Project& destination)
+    bool IsProjectOpen(AppData& data)
     {
-        return readJsonFile<Project>(path, destination);
+        return data.session.projectName.size() > 0;
     }
-    bool SaveProject(const std::string& path, Project& project)
+    bool CreateProject(AppData& data)
     {
-        return writeJsonFile<Project>(path, project, true);
-    }
-    void SetSessionProject(AppData& data, const Project& project)
-    {
-        if (&data.session.project != &project)
-        data.session.project = project;
+        data.project = Project(data.newProjectName);
+        data.session.projectName = data.project.name;
         std::stringstream ss;
-        ss << APPLICATION_NAME_AND_VERSION;
-        if (data.session.project.name.size() > 0)
-        ss << " - " << data.session.project.name;
-        if (data.session.project.dirty)
-        ss << "*";
-        data.window->SetName(ss.str());
+        ss << data.config.projectsPath << data.newProjectName << "/";
+        if (!ensureDirectories(ss.str()))
+            return false;
+        RefreshWindowTitle(data);
+        return SaveProject(data);
+    }
+    bool LoadProject(AppData& data)
+    {
+        std::stringstream ss;
+        ss << data.config.projectsPath << data.session.projectName << "/";
+        ss << data.session.projectName << PROJECT_EXTENSION;
+        return readJsonFile<Project>(ss.str(), data.project);
+    }
+    bool SaveProject(AppData& data)
+    {
+        std::stringstream ss;
+        ss << data.config.projectsPath << data.session.projectName << "/";
+        ss << data.session.projectName << PROJECT_EXTENSION;
+        bool result = writeJsonFile<Project>(ss.str(), data.project, true);
+        if (result)
+            data.isProjectDirty = false;
+        RefreshWindowTitle(data);
+        return result;
     }
 
     std::string CalculateShaderFilepath(const std::string& path, const std::string& name)
@@ -61,6 +90,26 @@ namespace App
                 return fullPath;
         }
         return "";
+    }
+    bool IsShaderNameAvailable(AppData& data, const std::string& name)
+    {
+        for (int i = 0; i < data.project.shaders.size(); ++i)
+            if (data.project.shaders[i].name == name)
+                return false;
+        return true;
+    }
+    bool CreateShader(AppData& data)
+    {
+        std::string name(data.newShaderName);
+        std::string path = CalculateShaderFilepath(data.config.shadersPath, name);
+        const char* types[] = SHADER_TYPES;
+        std::string type = types[data.session.newShaderTypeSelection];
+        Shader shader(name, path, type);
+        data.project.shaders.push_back(shader);
+        data.session.shaderTab.push_back((char)true);
+        data.isProjectDirty = true;
+        RefreshWindowTitle(data);
+        return true;
     }
 }
 

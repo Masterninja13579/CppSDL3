@@ -41,7 +41,7 @@ namespace
             ImGui::SameLine();
             if (ImGui::Button("Create", ImVec2(128, 0)))
             {
-                App::SetSessionProject(data, Project(data.newProjectName));
+                App::CreateProject(data);
                 ImGui::CloseCurrentPopup();
                 initialized = false;
             }
@@ -49,6 +49,13 @@ namespace
         }
 
         ImGui::PopStyleVar();
+    }
+
+    std::string BuildShaderErrorText(const std::string& name)
+    {
+        std::stringstream ss;
+        ss << "Shader '" << name << "' already exists!";
+        return ss.str();
     }
     std::string BuildShaderOutputText(const std::string& path)
     {
@@ -61,6 +68,8 @@ namespace
         static bool initialized = false;
         static std::string shaderOutputPath = "";
         static std::string shaderOutputText = "";
+        static std::string shaderErrorText = "";
+        static bool shaderNameAvailable = false;
         bool selectCreate = false;
         bool selectImport = false;
 
@@ -82,6 +91,9 @@ namespace
                     data.config.shadersPath, 
                     data.newShaderName);
                 shaderOutputText = BuildShaderOutputText(shaderOutputPath);
+                shaderNameAvailable = App::IsShaderNameAvailable(data, data.newShaderName);
+                if (!shaderNameAvailable)
+                    shaderErrorText = BuildShaderErrorText(data.newShaderName);
                 selectCreate = data.session.newShaderTabCreate;
                 selectImport = data.session.newShaderTabImport;
                 initialized = true;
@@ -107,9 +119,20 @@ namespace
                                 data->config.shadersPath, 
                                 callbackData->Buf);
                             shaderOutputText = BuildShaderOutputText(shaderOutputPath);
+                            shaderNameAvailable = App::IsShaderNameAvailable(*data, callbackData->Buf);
+                            if (!shaderNameAvailable)
+                                shaderErrorText = BuildShaderErrorText(callbackData->Buf);
                             return 0;
                         },
                         &data);
+                    if (!shaderNameAvailable)
+                    {
+                        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
+                        ImGui::PushStyleVarX(ImGuiStyleVar_FramePadding, 30);
+                        ImGui::Text(shaderErrorText.c_str());
+                        ImGui::PopStyleVar();
+                        ImGui::PopStyleColor();
+                    }
                     ImGui::Text(shaderOutputText.c_str());
                     ImGui::Text("Type: ");
                     int index = 0;
@@ -150,6 +173,8 @@ namespace
             ImGui::BeginDisabled(!areSettingsValid);
             if (ImGui::Button(okButtonName.c_str(), ImVec2(128, 0)))
             {
+                if (data.session.newShaderTabCreate)
+                    App::CreateShader(data);
                 ImGui::CloseCurrentPopup();
                 initialized = false;
             }

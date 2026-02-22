@@ -23,8 +23,10 @@ bool initialize(AppData& data)
     // Disable saving settings to .ini file
     ImGui::GetIO().IniFilename = NULL;
 
-    //App::LoadConfig(data);
-    //App::LoadSession(data);
+    App::LoadConfig(data);
+    App::LoadSession(data);
+    if (App::IsProjectOpen(data))
+        App::LoadProject(data);
 
     // if (!EditorGrid::Initialize())
     //     return false;
@@ -33,8 +35,8 @@ bool initialize(AppData& data)
 }
 void shutdown(AppData& data)
 {
-    App::SaveConfig(data);
     App::SaveSession(data);
+    App::SaveConfig(data);
 
     // if (data.grid)
     //     delete data.grid;

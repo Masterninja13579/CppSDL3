@@ -1,14 +1,17 @@
 add_executable(shaderBuilder
     src/main.cpp
-    src/appFunctions.cpp
 
-    src/objects/editorCamera.cpp
-    src/objects/editorGrid.cpp
+    src/appFunctions.cpp
 
     src/gui/gui.cpp
     src/gui/mainMenuBar.cpp
     src/gui/popups.cpp
     src/gui/selectorPanel.cpp    
+
+    src/objects/editorCamera.cpp
+    src/objects/editorGrid.cpp
+
+    src/utils/fileIO.cpp
 )
 
 include_directories(

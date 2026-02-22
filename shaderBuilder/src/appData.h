@@ -14,28 +14,14 @@
 struct AppData
 {
     bool applicationRun = true;
-
+    
     Application::Window* window = nullptr;
-    
-    // bx::Ticks tickStart = bx::getNow();
-    // bx::Ticks tickCurrent = tickStart;
-    // bx::Ticks tickLast = tickStart;
-    // float timeDelta = 0.0f;
-    // float timeDuration = 0.0f;
-    
-    // bool mouseInWindow = false;
-    // float mousePositionX = -1.0f;
-    // float mousePositionY = -1.0f;
-    // float mouseXMotion = 0.0f;
-    // float mouseYMotion = 0.0f;
-    // bool mouseGrab = false;
-    
-    // EditorCamera camera;
-    // EditorGrid* grid = nullptr;
     
     Config config;
     Session session;
-
+    Project project;
+    
+    bool isProjectDirty = false;
     bool doNewProjectPopup = false;
     bool doNewShaderPopup = false;
 

@@ -2,8 +2,14 @@
 
 #include "core.h"
 
+#include <filesystem>
 #include <fstream>
 #include <string>
+
+bool ensureDirectories(const std::string& dirpath);
+
+bool readTextFile(const std::string& path, std::string& output);
+bool writeTextFile(const std::string& path, const std::string& content, bool overwrite = false);
 
 template<typename T>
 bool readJsonFile(const std::string& path, T& destination)

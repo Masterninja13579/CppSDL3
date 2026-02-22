@@ -1,5 +1,6 @@
 #include "mainMenuBar.h"
 
+#include "appFunctions.h"
 #include "defines.h"
 
 namespace GUI
@@ -14,9 +15,12 @@ namespace GUI
                     data.doNewProjectPopup = true;
 
                 if (ImGui::MenuItem("Open", "CTRL+O")) {}
-                if (ImGui::MenuItem("Save", "CTRL+S", false, false)) {}
-                if (ImGui::MenuItem("Save As", "CTRL+SHIFT+S", false, false)) {}
-                if (ImGui::MenuItem("Close", "CTRL+W", false, data.session.isProjectOpen()))
+                if (ImGui::MenuItem("Save", "CTRL+S", false, App::IsProjectOpen(data)))
+                {
+                    App::SaveProject(data);
+                }
+                if (ImGui::MenuItem("Save As", "CTRL+SHIFT+S", false, App::IsProjectOpen(data))) {}
+                if (ImGui::MenuItem("Close", "CTRL+W", false, App::IsProjectOpen(data)))
                 {
                     
                 }

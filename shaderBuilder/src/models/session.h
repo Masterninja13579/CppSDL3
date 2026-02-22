@@ -2,21 +2,34 @@
 
 #include "core.h"
 
+#include "defines.h"
 #include "project.h"
 
 #include <vector>
 
 struct Session
 {
-    Project project;
+    std::string projectName = "";
+    std::vector<char> shaderTab;
 
     bool newShaderTabCreate = true;
     bool newShaderTabImport = false;
     int newShaderTypeSelection = 0;
 
-    inline bool isProjectOpen() { return project.name.size() > 0; }
+    bool selectorShadersOpen = true;
+    bool selectorLibrariesOpen = true;
+    bool selectorOutputsOpen = true;
 };
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Session, 
-    project
+    projectName,
+    shaderTab,
+
+    newShaderTabCreate,
+    newShaderTabImport,
+    newShaderTypeSelection,
+
+    selectorShadersOpen,
+    selectorLibrariesOpen,
+    selectorOutputsOpen
 )

@@ -12,9 +12,12 @@ namespace App
     bool LoadSession(AppData& data);
     bool SaveSession(AppData& data);
 
-    bool LoadProject(const std::string& path, Project& destination);
-    bool SaveProject(const std::string& path, const Project& project);
-    void SetSessionProject(AppData& data, const Project& project);
+    bool IsProjectOpen(AppData& data);
+    bool CreateProject(AppData& data);
+    bool LoadProject(AppData& data);
+    bool SaveProject(AppData& data);
 
     std::string CalculateShaderFilepath(const std::string& path, const std::string& name);
+    bool IsShaderNameAvailable(AppData& data, const std::string& name);
+    bool CreateShader(AppData& data);
 }
