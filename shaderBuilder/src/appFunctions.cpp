@@ -87,7 +87,7 @@ namespace App
             std::filesystem::path fullPath(path);
             fullPath.append(ss.str());
             if (!std::filesystem::exists(fullPath))
-                return fullPath;
+                return fullPath.string();
         }
         return "";
     }
