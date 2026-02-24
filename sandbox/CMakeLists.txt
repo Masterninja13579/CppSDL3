@@ -7,6 +7,7 @@ add_executable(sandbox
     src/bgfxExamples/03-raymarch.cpp
 
     src/experiments/embedExampleShaders.cpp
+    src/experiments/threadPoolTest.cpp
 )
 
 include_directories(
