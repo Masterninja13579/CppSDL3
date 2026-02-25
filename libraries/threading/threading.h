@@ -14,55 +14,82 @@
 
 namespace Threading
 {
-    class Task
+    struct _TaskData
     {
-        friend class ThreadPool;
-
-    protected:
-        struct TaskData
-        {
-            bool finished = false;
-            std::mutex mutex;
-            std::condition_variable condition;
-            std::function<void()> taskFunction;
-        };
-
-        std::shared_ptr<TaskData> data;
-
-        Task(std::shared_ptr<TaskData> data);
-
-    public:
-        Task() = delete;
-        Task(const Task& other);
-        Task& operator=(const Task& other);
-
-        bool isFinished();
-        void wait();
+        bool finished;
+        std::mutex mutex;
+        std::condition_variable condition;
+        std::function<void()> taskFunction;
     };
 
     template<typename T>
-    class ValueTask : public Task
+    class ITask
+    {
+    protected:
+        std::shared_ptr<_TaskData> data;
+
+        inline ITask(std::shared_ptr<_TaskData> data)
+            : data(data) {}
+
+    public:    
+        inline bool isFinished()
+        {
+            std::lock_guard<std::mutex> lock(data->mutex);
+            return data->finished;
+        }
+        inline void wait()
+        {
+            std::unique_lock<std::mutex> lock(data->mutex);
+            if (data->finished)
+                return;
+            data->condition.wait(lock, [this]{ return data->finished; });
+        }
+        virtual T result() = 0;
+    };
+
+    class Task : public ITask<void>
+    {
+        friend class ThreadPool;
+
+        inline Task(std::shared_ptr<_TaskData> data)
+            : ITask(data) {}
+        
+    public:
+        Task() = delete;
+        inline Task(const Task& other)
+            : ITask(other.data) {}
+        inline Task& operator=(const Task& other)
+        {
+            data = other.data;
+            return *this;
+        }
+
+        inline void result() {}
+    };
+
+    template<typename T>
+    class ValueTask : public ITask<T>
     {
         friend class ThreadPool;
 
         std::shared_ptr<T> value;
 
-        inline ValueTask(std::shared_ptr<TaskData> data, std::shared_ptr<T> value)
-            : Task(data), value(value) {}
+        inline ValueTask(std::shared_ptr<_TaskData> data, std::shared_ptr<T> value)
+            : ITask<T>(data), value(value) {}
 
     public:
         ValueTask() = delete;
         inline ValueTask(const ValueTask& other)
-            : Task(other), value(other.value) {}
+            : ITask<T>(other), value(other.value) {}
         inline ValueTask& operator=(const ValueTask& other)
         {
-            Task::operator=(other);
+            ITask<T>::operator=(other);
             value = other.value;
         }
 
         inline T& result()
         {
-            std::lock_guard<std::mutex> lock(data->mutex);
+            std::lock_guard<std::mutex> lock(ITask<T>::data->mutex);
             return *value;
         }
     };
@@ -74,7 +101,7 @@ namespace Threading
 
         static std::mutex taskQueueMutex;
         static std::condition_variable taskQueueCondition;
-        static std::queue<std::shared_ptr<Task::TaskData>> taskQueue;
+        static std::queue<std::shared_ptr<_TaskData>> taskQueue;
 
         static void ThreadFunction();
 
@@ -92,7 +119,7 @@ namespace Threading
 #ifdef ENABLE_THREADPOOL_DEBUG_OUTPUT
             std::cout << "Adding value task...\n";
 #endif
-            std::shared_ptr<Task::TaskData> data = std::make_shared<Task::TaskData>();
+            std::shared_ptr<_TaskData> data = std::make_shared<_TaskData>();
             std::shared_ptr<T> value = std::make_shared<T>();
             data->taskFunction = [taskFunction, value](){ *value = taskFunction(); };
             std::lock_guard<std::mutex> lock(taskQueueMutex);

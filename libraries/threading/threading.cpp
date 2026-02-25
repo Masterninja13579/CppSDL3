@@ -8,44 +8,12 @@
 
 namespace Threading
 {
-    Task::Task(std::shared_ptr<TaskData> data)
-        : data(data)
-    {
-
-    }
-
-    Task::Task(const Task& other)
-        : data(other.data)
-    {
-        
-    }
-
-    Task& Task::operator=(const Task& other)
-    {
-        data = other.data;
-        return *this;
-    }
-
-    bool Task::isFinished()
-    {
-        std::lock_guard<std::mutex> lock(data->mutex);
-        return data->finished;
-    }
-
-    void Task::wait()
-    {
-        std::unique_lock<std::mutex> lock(data->mutex);
-        if (data->finished)
-            return;
-        data->condition.wait(lock, [this]{ return data->finished; });
-    }
-
     std::vector<std::thread> ThreadPool::poolThreads;
     bool ThreadPool::shutdown = true;
 
     std::mutex ThreadPool::taskQueueMutex;
     std::condition_variable ThreadPool::taskQueueCondition;
-    std::queue<std::shared_ptr<Task::TaskData>> ThreadPool::taskQueue;
+    std::queue<std::shared_ptr<_TaskData>> ThreadPool::taskQueue;
 
     void ThreadPool::ThreadFunction()
     {
@@ -59,7 +27,7 @@ namespace Threading
 #endif
         while (!shutdown)
         {
-            std::shared_ptr<Task::TaskData> data;
+            std::shared_ptr<_TaskData> data;
             {
                 std::unique_lock<std::mutex> lock(taskQueueMutex);
                 taskQueueCondition.wait(lock, []{
@@ -147,7 +115,7 @@ namespace Threading
 #ifdef ENABLE_THREADPOOL_DEBUG_OUTPUT
         std::cout << "Adding task...\n";
 #endif
-        std::shared_ptr<Task::TaskData> data = std::make_shared<Task::TaskData>();
+        std::shared_ptr<_TaskData> data = std::make_shared<_TaskData>();
         data->taskFunction = taskFunction;
         std::lock_guard<std::mutex> lock(taskQueueMutex);
         taskQueue.push(data);
