@@ -87,9 +87,7 @@ namespace
             if (!initialized)
             {
                 strcpy(data.newShaderName, SHADER_NAME_DEFAULT);
-                shaderOutputPath = App::CalculateShaderFilepath(
-                    data.config.shadersPath, 
-                    data.newShaderName);
+                shaderOutputPath = App::CalculateShaderDirectoryPath(data, data.newShaderName);
                 shaderOutputText = BuildShaderOutputText(shaderOutputPath);
                 shaderNameAvailable = App::IsShaderNameAvailable(data, data.newShaderName);
                 if (!shaderNameAvailable)
@@ -115,9 +113,7 @@ namespace
                         ImGuiInputTextFlags_CallbackEdit,
                         [](ImGuiInputTextCallbackData* callbackData){
                             AppData* data = (AppData*)callbackData->UserData;
-                            shaderOutputPath = App::CalculateShaderFilepath(
-                                data->config.shadersPath, 
-                                callbackData->Buf);
+                            shaderOutputPath = App::CalculateShaderDirectoryPath(*data, callbackData->Buf);
                             shaderOutputText = BuildShaderOutputText(shaderOutputPath);
                             shaderNameAvailable = App::IsShaderNameAvailable(*data, callbackData->Buf);
                             if (!shaderNameAvailable)

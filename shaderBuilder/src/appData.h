@@ -11,6 +11,9 @@
 
 #include <bx/timer.h>
 
+#include <vector>
+#include <string>
+
 struct AppData
 {
     bool applicationRun = true;
@@ -24,9 +27,14 @@ struct AppData
     bool isProjectDirty = false;
     bool doNewProjectPopup = false;
     bool doNewShaderPopup = false;
+    int selectNextTab = -1;
 
     char newProjectName[PROJECT_NAME_SIZE] = PROJECT_NAME_DEFAULT;
     char newShaderName[SHADER_NAME_SIZE] = SHADER_NAME_DEFAULT;
+
+    std::vector<bool> shaderLoaded;
+    std::vector<std::string> shaderSource;
+    std::vector<std::string> shaderVaryingSource;
 
     AppData() {}
 };

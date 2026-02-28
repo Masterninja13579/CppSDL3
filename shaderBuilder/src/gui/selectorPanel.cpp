@@ -1,5 +1,7 @@
 #include "selectorPanel.h"
 
+#include "appFunctions.h"
+
 namespace GUI
 {
     void DoSelectorPanel(AppData& data)
@@ -15,10 +17,20 @@ namespace GUI
         ImGui::SetNextItemOpen(data.session.selectorShadersOpen, ImGuiCond_FirstUseEver);
         if (ImGui::TreeNode("Shaders"))
         {
+            int baseIndex = 0;
             data.session.selectorShadersOpen = true;
             for (int i = 0; i < data.project.shaders.size(); ++i)
             {
-                ImGui::Text(data.project.shaders[i].name.c_str());
+                if (ImGui::Selectable(
+                    data.project.shaders[i].name.c_str(),
+                    data.session.selectedObject == baseIndex + i,
+                    ImGuiSelectableFlags_AllowDoubleClick))
+                {
+                    data.session.selectedObject = baseIndex + i;
+                    if (ImGui::IsMouseDoubleClicked(0))
+                        App::OpenShaderTab(data, i);
+                    //ImGui::Text(data.project.shaders[i].name.c_str());
+                }
             }
             ImGui::Spacing();
             if (ImGui::Button("+add"))

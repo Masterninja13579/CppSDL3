@@ -14,6 +14,25 @@
 
 namespace
 {
+    void DoSourceAndVarying(AppData& data, int shaderIndex)
+    {
+        if (data.shaderLoaded[shaderIndex])
+        {
+
+        }
+        else
+        {
+            const char* text = "Loading Shader...";
+            ImVec2 textSize = ImGui::CalcTextSize(text);
+            ImVec2 center = ImGui::GetContentRegionAvail();
+            center.x = center.x / 2;
+            center.y = center.y / 2;
+            ImVec2 position = ImVec2(center.x - textSize.x / 2, center.y);
+            ImGui::SetCursorPos(position);
+            ImGui::Text("Loading Shader...");
+        }
+    }
+
     void DoNoProjectLayout(AppData& data)
     {
         ImVec2 center = ImGui::GetContentRegionAvail();
@@ -103,19 +122,48 @@ namespace
                 ImGuiTabBarFlags_TabListPopupButton |
                 ImGuiTabBarFlags_NoCloseWithMiddleMouseButton))
             {
-                for (int i = 0; i < data.project.shaders.size(); ++i)
+                for (int i = 0; i < data.session.openTabs.size(); ++i)
                 {
-                    if (!data.session.shaderTab[i])
-                        continue;
-                    if (ImGui::BeginTabItem(
-                        data.project.shaders[i].name.c_str(),
-                        (bool*)&data.session.shaderTab[i],
-                        ImGuiTabItemFlags_None))
+                    int index = data.session.openTabs[i].index;
+
+                    const char* name = "";
+                    switch (data.session.openTabs[i].source)
                     {
-                        ImGui::Text("This is the %s tab!", data.project.shaders[i].sourcePath.c_str());
+                        case TAB_SOURCE_SHADER:
+                            name = data.project.shaders[index].name.c_str();
+                            break;
+                        case TAB_SOURCE_LIBRARY:
+                            name = "libObject";
+                            break;
+                        case TAB_SOURCE_OUTPUT:
+                            name = "outObject";
+                            break;
+                        default: 
+                            name = "ERROR";
+                            break;
+                    }
+
+                    bool isOpen = true;
+                    if (ImGui::BeginTabItem(name, &isOpen, 
+                        data.selectNextTab == i ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None))
+                    {
+                        switch (data.session.openTabs[i].source)
+                        {
+                            case TAB_SOURCE_SHADER:     DoSourceAndVarying(data, index);    break;
+                            case TAB_SOURCE_LIBRARY:    break;
+                            case TAB_SOURCE_OUTPUT:     break;
+                            default: break;
+                        }
+                        data.session.selectedTab = i;
                         ImGui::EndTabItem();
                     }
+                    if (!isOpen)
+                    {
+                        data.session.openTabs.erase(data.session.openTabs.begin() + i);
+                        --i;
+                    }
                 }
+                data.selectNextTab = -1;
                 ImGui::EndTabBar();
             }
             ImGui::EndChild();

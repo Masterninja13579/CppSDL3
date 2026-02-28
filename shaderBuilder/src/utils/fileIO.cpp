@@ -2,6 +2,8 @@
 
 bool ensureDirectories(const std::string& dirpath)
 {
+    if (std::filesystem::exists(dirpath))
+        return true;
     std::filesystem::path path(dirpath);
     return std::filesystem::create_directories(path);
 }

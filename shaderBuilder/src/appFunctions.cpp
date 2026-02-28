@@ -2,6 +2,7 @@
 
 #include "core.h"
 
+#include "constants.h"
 #include "utils/fileIO.h"
 
 #include <filesystem>
@@ -34,13 +35,61 @@ namespace App
     }
     bool LoadSession(AppData& data)
     {
-        return readJsonFile<Session>(APPLICATION_SESSION_FILEPATH, data.session);
+        bool result = readJsonFile<Session>(APPLICATION_SESSION_FILEPATH, data.session);
+        if (!result)
+            return false;
+        if (!IsProjectOpen(data))
+            return true;
+        if (!LoadProject(data))
+        {
+            data.session = Session();
+            return true;
+        }
+        int shaderCount = data.project.shaders.size();
+        data.shaderLoaded.resize(shaderCount);
+        data.shaderSource.resize(shaderCount);
+        data.shaderVaryingSource.resize(shaderCount);
+        for (int i = 0; i < data.session.openTabs.size(); ++i)
+        {
+            int index = data.session.openTabs[i].index;
+            switch (data.session.openTabs[i].source)
+            {
+                case TAB_SOURCE_SHADER:
+                {
+                    if (index >= data.project.shaders.size())
+                    {
+                        data.session.openTabs.erase(data.session.openTabs.begin() + i);
+                        --i;
+                        continue;
+                    }
+                    data.shaderLoaded[index] = LoadShaderSource(data, index);
+                    break;
+                }
+                case TAB_SOURCE_LIBRARY: break;
+                case TAB_SOURCE_OUTPUT: break;
+                default: break;
+            }
+        }
+        return true;
     }
     bool SaveSession(AppData& data)
     {
         return writeJsonFile<Session>(APPLICATION_SESSION_FILEPATH, data.session, true);
     }
 
+    std::string CalculateProjectDirectoryPath(AppData& data)
+    {
+        std::stringstream ss;
+        ss << data.config.projectsPath << data.session.projectName << "/";
+        return ss.str();
+    }
+    std::string CalculateProjectFilePath(AppData& data)
+    {
+        std::stringstream ss;
+        ss << CalculateProjectDirectoryPath(data);
+        ss << data.session.projectName << PROJECT_EXTENSION;
+        return ss.str();
+    }
     bool IsProjectOpen(AppData& data)
     {
         return data.session.projectName.size() > 0;
@@ -49,47 +98,43 @@ namespace App
     {
         data.project = Project(data.newProjectName);
         data.session.projectName = data.project.name;
-        std::stringstream ss;
-        ss << data.config.projectsPath << data.newProjectName << "/";
-        if (!ensureDirectories(ss.str()))
+        if (!ensureDirectories(CalculateProjectDirectoryPath(data)))
             return false;
         RefreshWindowTitle(data);
         return SaveProject(data);
     }
     bool LoadProject(AppData& data)
     {
-        std::stringstream ss;
-        ss << data.config.projectsPath << data.session.projectName << "/";
-        ss << data.session.projectName << PROJECT_EXTENSION;
-        return readJsonFile<Project>(ss.str(), data.project);
+        return readJsonFile<Project>(CalculateProjectFilePath(data), data.project);
     }
     bool SaveProject(AppData& data)
     {
-        std::stringstream ss;
-        ss << data.config.projectsPath << data.session.projectName << "/";
-        ss << data.session.projectName << PROJECT_EXTENSION;
-        bool result = writeJsonFile<Project>(ss.str(), data.project, true);
+        bool result = writeJsonFile<Project>(CalculateProjectFilePath(data), data.project, true);
         if (result)
             data.isProjectDirty = false;
         RefreshWindowTitle(data);
         return result;
     }
 
-    std::string CalculateShaderFilepath(const std::string& path, const std::string& name)
+    std::string CalculateShaderDirectoryPath(AppData& data, const std::string& name)
     {
-        for (int i = 0; i < 100; ++i)
-        {
-            std::stringstream ss;
-            ss << name;
-            if (i > 0)
-                ss << " (" << i << ")";
-            ss << SHADER_EXTENSION;
-            std::filesystem::path fullPath(path);
-            fullPath.append(ss.str());
-            if (!std::filesystem::exists(fullPath))
-                return fullPath.string();
-        }
-        return "";
+        std::stringstream ss;
+        ss << CalculateProjectDirectoryPath(data) << data.config.shadersPath;
+        ss << name << "/";
+        return ss.str();
+    }
+    std::string CalculateShaderSourcePath(AppData& data, const std::string& name)
+    {
+        std::stringstream ss;
+        ss << CalculateShaderDirectoryPath(data, name);
+        ss << name << SHADER_EXTENSION;
+        return ss.str();
+    }
+    std::string CalculateShaderVaryingPath(AppData& data, const std::string& name)
+    {
+        std::stringstream ss;
+        ss << CalculateShaderDirectoryPath(data, name) << SHADER_VARYING_FILENAME;
+        return ss.str();
     }
     bool IsShaderNameAvailable(AppData& data, const std::string& name)
     {
@@ -101,15 +146,59 @@ namespace App
     bool CreateShader(AppData& data)
     {
         std::string name(data.newShaderName);
-        std::string path = CalculateShaderFilepath(data.config.shadersPath, name);
+        std::string directoryPath = CalculateShaderDirectoryPath(data, name);
+        if (!ensureDirectories(directoryPath))
+            return false;
+        std::string sourcePath = CalculateShaderSourcePath(data, name);
+        std::string varyingPath = CalculateShaderVaryingPath(data, name);
         const char* types[] = SHADER_TYPES;
         std::string type = types[data.session.newShaderTypeSelection];
-        Shader shader(name, path, type);
+        std::string sourceText = SHADER_SOURCE_DEFAULT.at(type);
+        std::string varyingText = SHADER_VARYING_DEFAULT.at(type);
+        Shader shader(name, type);
         data.project.shaders.push_back(shader);
-        data.session.shaderTab.push_back((char)true);
+        data.shaderLoaded.push_back(true);
+        data.shaderSource.push_back(sourceText);
+        data.shaderVaryingSource.push_back(varyingText);
         data.isProjectDirty = true;
         RefreshWindowTitle(data);
+        SaveShaderSource(data, data.project.shaders.size() - 1);
+        OpenShaderTab(data, data.project.shaders.size() - 1);
         return true;
+    }
+    bool OpenShaderTab(AppData& data, int shaderIndex)
+    {
+        for (int i = 0; i < data.session.openTabs.size(); ++i)
+        {
+            if (data.session.openTabs[i].source == TAB_SOURCE_SHADER &&
+                data.session.openTabs[i].index == shaderIndex)
+            {
+                data.selectNextTab = i;
+                return true;
+            }
+        }
+        data.session.openTabs.push_back(Tab(TAB_SOURCE_SHADER, shaderIndex));
+        if (!data.shaderLoaded[shaderIndex])
+            return LoadShaderSource(data, shaderIndex);
+        return true;
+    }
+    bool LoadShaderSource(AppData& data, int shaderIndex)
+    {
+        std::string shaderName = data.project.shaders[shaderIndex].name;
+        std::string sourcePath = CalculateShaderSourcePath(data, shaderName);
+        std::string varyingPath = CalculateShaderVaryingPath(data, shaderName);
+        bool loadedSource = readTextFile(sourcePath, data.shaderSource[shaderIndex]);
+        bool loadedVarying = readTextFile(varyingPath, data.shaderVaryingSource[shaderIndex]);
+        return loadedSource && loadedVarying;
+    }
+    bool SaveShaderSource(AppData& data, int shaderIndex)
+    {
+        std::string shaderName = data.project.shaders[shaderIndex].name;
+        std::string sourcePath = CalculateShaderSourcePath(data, shaderName);
+        std::string varyingPath = CalculateShaderVaryingPath(data, shaderName);
+        bool savedSource = writeTextFile(sourcePath, data.shaderSource[shaderIndex], true);
+        bool savedVarying = writeTextFile(varyingPath, data.shaderVaryingSource[shaderIndex], true);
+        return savedSource && savedVarying;
     }
 }
 
