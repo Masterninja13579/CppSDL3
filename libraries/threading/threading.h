@@ -31,7 +31,11 @@ namespace Threading
         inline ITask(std::shared_ptr<_TaskData> data)
             : data(data) {}
 
-    public:    
+    public:
+        inline bool isNull()
+        {
+            return data.get() == nullptr;
+        }
         inline bool isFinished()
         {
             std::lock_guard<std::mutex> lock(data->mutex);
@@ -55,7 +59,8 @@ namespace Threading
             : ITask(data) {}
         
     public:
-        Task() = delete;
+        inline Task()
+            : ITask(nullptr) {}
         inline Task(const Task& other)
             : ITask(other.data) {}
         inline Task& operator=(const Task& other)
@@ -78,7 +83,8 @@ namespace Threading
             : ITask<T>(data), value(value) {}
 
     public:
-        ValueTask() = delete;
+        inline ValueTask()
+            :ITask<T>(nullptr), value(nullptr) {}
         inline ValueTask(const ValueTask& other)
             : ITask<T>(other), value(other.value) {}
         inline ValueTask& operator=(const ValueTask& other)
