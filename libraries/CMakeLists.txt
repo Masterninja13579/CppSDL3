@@ -6,6 +6,7 @@ add_library(libraries STATIC
     behaviorStates/behaviorStateMachine.cpp
     bgfxTools/bgfxTools.cpp
     imgui-bgfx/imgui_impl_bgfx.cpp
+    threading/threading.cpp
     window/window.cpp
 )
 

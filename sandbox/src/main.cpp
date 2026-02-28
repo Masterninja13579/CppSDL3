@@ -2,6 +2,7 @@
 #include "experiments/bgfxToolsTester.h"
 #include "experiments/embedExampleShaders.h"
 #include "experiments/stateMachineTests.h"
+#include "experiments/threadPoolTest.h"
 #include "experiments/windowTest.h"
 
 #include "bgfxExamples/all.h"
@@ -12,7 +13,7 @@ int main(int argc, char** argv)
 {
     try
     {
-       int result = windowTest();
+       int result = threadPoolTest();
        std::cout << (result == EXIT_SUCCESS ? "Success!\n" : "Failure!\n");
        return result;
     }
