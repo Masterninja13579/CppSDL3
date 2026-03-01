@@ -32,15 +32,26 @@ namespace Threading
             : data(data) {}
 
     public:
+        /// <summary>
+        /// Returns true if the task contains no function.
+        /// </summary>
+        /// <returns></returns>
         inline bool isNull()
         {
             return data.get() == nullptr;
         }
+        /// <summary>
+        /// Returns true if complete.
+        /// </summary>
+        /// <returns></returns>
         inline bool isFinished()
         {
             std::lock_guard<std::mutex> lock(data->mutex);
             return data->finished;
         }
+        /// <summary>
+        /// Awaits the task's completion. Blocks the thread.
+        /// </summary>
         inline void wait()
         {
             std::unique_lock<std::mutex> lock(data->mutex);
@@ -48,6 +59,10 @@ namespace Threading
                 return;
             data->condition.wait(lock, [this]{ return data->finished; });
         }
+        /// <summary>
+        /// Get the result of the task.
+        /// </summary>
+        /// <returns></returns>
         virtual T result() = 0;
     };
 
@@ -93,6 +108,10 @@ namespace Threading
             value = other.value;
         }
 
+        /// <summary>
+        /// Get the result of the task as a reference.
+        /// </summary>
+        /// <returns></returns>
         inline T& result()
         {
             std::lock_guard<std::mutex> lock(ITask<T>::data->mutex);
@@ -114,11 +133,31 @@ namespace Threading
     public:
         ThreadPool() = delete;
 
+        /// <summary>
+        /// Initializes threads with the given thread count. Returns true on success.
+        /// </summary>
+        /// <param name="threadCount"></param>
+        /// <returns></returns>
         static bool Initialize(int threadCount);
+        /// <summary>
+        /// Waits for all threads to finish, then cleans up resources.
+        /// </summary>
+        /// <returns></returns>
         static bool Shutdown();
 
+        /// <summary>
+        /// Queues a function with a void return for the thread.
+        /// </summary>
+        /// <param name="taskFunction"></param>
+        /// <returns></returns>
         static Task Submit(std::function<void()> taskFunction);
 
+        /// <summary>
+        /// Queues a function with the given return type for the thread.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="taskFunction"></param>
+        /// <returns></returns>
         template<typename T>
         inline static ValueTask<T> Submit(std::function<T()> taskFunction)
         {
