@@ -13,6 +13,10 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_properties.h>
 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 #ifdef OS_WINDOWS 
     #define PLATFORM_SDL_RENDER_FLAG 0
     #define PLATFORM_BGFX_RENDERERTYPE bgfx::RendererType::Direct3D11;
