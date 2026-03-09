@@ -20,4 +20,5 @@ target_link_libraries(libraries PUBLIC
     imgui
     SDL3::SDL3-static
     subprocess
+    #assimp
 )
