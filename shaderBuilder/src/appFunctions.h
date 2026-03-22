@@ -7,6 +7,8 @@
 
 namespace App
 {
+    void RefreshWindowTitle(AppData& data);
+
     bool LoadConfig(AppData& data);
     bool SaveConfig(AppData& data);
     bool LoadSession(AppData& data);

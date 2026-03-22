@@ -14,11 +14,92 @@
 
 namespace
 {
+    struct UserData
+    {
+        AppData* appData;
+        int shaderIndex;
+        std::string* targetString;
+    };
+
+    int ImGuiInputTextCallback(ImGuiInputTextCallbackData* data)
+    {
+        UserData* userData = (UserData*)data->UserData;
+        if (data->EventFlag == ImGuiInputTextFlags_CallbackResize)
+        {
+            IM_ASSERT(data->Buf == userData->targetString->c_str());
+            userData->targetString->resize(data->BufTextLen);
+            data->Buf = (char*)userData->targetString->c_str();
+        }
+        else if (data->EventFlag == ImGuiInputTextFlags_CallbackEdit)
+        {
+            userData->appData->shaderDirty[userData->shaderIndex] = true;
+            userData->appData->isProjectDirty = true;
+            App::RefreshWindowTitle(*userData->appData);
+        }
+        return 0;
+    }
+
     void DoSourceAndVarying(AppData& data, int shaderIndex)
     {
         if (data.shaderLoaded[shaderIndex])
         {
+            // Check if the window is being resized
+            bool isRegionResized = false;
+            ImVec2 guiRegion = ImGui::GetContentRegionAvail();
+            static ImVec2 guiRegionPrevious = guiRegion;
+            if (guiRegion.x != guiRegionPrevious.x ||
+                guiRegion.y != guiRegionPrevious.y)
+            {
+                guiRegionPrevious = guiRegion;
+                isRegionResized = true;
+            }
 
+            UserData userData;
+            userData.appData = &data;
+            userData.shaderIndex = shaderIndex;
+
+            ImVec2 sourcePanelSize(-data.config.guiVaryingPanelWidth, 0);
+            ImVec2 sourcePanelSizeMin(GUI_SOURCEPANEL_MIN_SIZE, 0);
+            ImVec2 sourcePanelSizeMax(guiRegion.x - GUI_VARYINGPANEL_MIN_SIZE, FLT_MAX);
+            ImGui::SetNextWindowSizeConstraints(
+                sourcePanelSizeMin,
+                sourcePanelSizeMax);
+            ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(0, 255, 0, 100));
+            ImGui::BeginChild("SourcePanel", sourcePanelSize,
+                ImGuiChildFlags_Borders |
+                (isRegionResized ? 0 : ImGuiChildFlags_ResizeX));
+            userData.targetString = &data.shaderSource[shaderIndex];
+            ImGui::InputTextMultiline(
+                "##sourceText",
+                (char*)data.shaderSource[shaderIndex].c_str(),
+                data.shaderSource[shaderIndex].capacity() + 1,
+                ImGui::GetContentRegionAvail(),
+                ImGuiInputTextFlags_CallbackResize | ImGuiInputTextFlags_CallbackEdit,
+                ImGuiInputTextCallback,
+                &userData
+            );
+            ImGui::PopStyleColor();
+            ImGui::EndChild();
+            if (!isRegionResized)
+                data.config.guiVaryingPanelWidth = guiRegion.x - ImGui::GetItemRectSize().x;
+
+            ImVec2 varyingPanelSize(data.config.guiVaryingPanelWidth, 0);
+            ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(0, 0, 255, 100));
+            ImGui::SameLine();
+            ImGui::BeginChild("VaryingPanel", varyingPanelSize,
+                ImGuiChildFlags_Borders);
+            userData.targetString = &data.shaderVaryingSource[shaderIndex];
+            ImGui::InputTextMultiline(
+                "##varyingText",
+                (char*)data.shaderVaryingSource[shaderIndex].c_str(),
+                data.shaderVaryingSource[shaderIndex].capacity() + 1,
+                ImGui::GetContentRegionAvail(),
+                ImGuiInputTextFlags_CallbackResize | ImGuiInputTextFlags_CallbackEdit,
+                ImGuiInputTextCallback,
+                &userData
+            );
+            ImGui::PopStyleColor();
+            ImGui::EndChild();
         }
         else
         {
@@ -126,26 +207,33 @@ namespace
                 {
                     int index = data.session.openTabs[i].index;
 
-                    const char* name = "";
+                    std::stringstream ss;
                     switch (data.session.openTabs[i].source)
                     {
                         case TAB_SOURCE_SHADER:
-                            name = data.project.shaders[index].name.c_str();
+                            ss << data.project.shaders[index].name.c_str();
+                            if (data.shaderDirty[index])
+                                ss << "*";
                             break;
                         case TAB_SOURCE_LIBRARY:
-                            name = "libObject";
+                            ss << "libObject";
                             break;
                         case TAB_SOURCE_OUTPUT:
-                            name = "outObject";
+                            ss << "outObject";
                             break;
                         default: 
-                            name = "ERROR";
+                            ss << "ERROR";
                             break;
                     }
 
                     bool isOpen = true;
-                    if (ImGui::BeginTabItem(name, &isOpen, 
+                    if (ImGui::BeginTabItem(ss.str().c_str(), &isOpen, 
                         data.selectNextTab == i ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None))
+                    {
+                        data.session.selectedTab = i;
+                        ImGui::EndTabItem();
+                    }
+                    if (data.session.selectedTab == i)
                     {
                         switch (data.session.openTabs[i].source)
                         {
@@ -154,8 +242,6 @@ namespace
                             case TAB_SOURCE_OUTPUT:     break;
                             default: break;
                         }
-                        data.session.selectedTab = i;
-                        ImGui::EndTabItem();
                     }
                     if (!isOpen)
                     {

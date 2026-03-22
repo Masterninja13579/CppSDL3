@@ -20,7 +20,7 @@ const std::unordered_map<std::string, std::string> SHADER_SOURCE_DEFAULT =
         SHADER_TYPE_FRAGMENT,
         "void main()\n"
         "{\n"
-        "    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);"
+        "    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
         "}\n"
     },
     {

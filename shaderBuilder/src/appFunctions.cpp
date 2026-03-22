@@ -7,7 +7,7 @@
 
 #include <filesystem>
 
-namespace
+namespace App
 {
     void RefreshWindowTitle(AppData& data)
     {
@@ -21,10 +21,6 @@ namespace
         }
         data.window->SetName(ss.str());
     }
-}
-
-namespace App
-{
     bool LoadConfig(AppData& data)
     {
         return readJsonFile<Config>(APPLICATION_CONFIG_FILEPATH, data.config);
@@ -47,6 +43,7 @@ namespace App
         }
         int shaderCount = data.project.shaders.size();
         data.shaderLoaded.resize(shaderCount);
+        data.shaderDirty.resize(shaderCount);
         data.shaderSource.resize(shaderCount);
         data.shaderVaryingSource.resize(shaderCount);
         for (int i = 0; i < data.session.openTabs.size(); ++i)
@@ -109,6 +106,9 @@ namespace App
     }
     bool SaveProject(AppData& data)
     {
+        for (int i = 0; i < data.project.shaders.size(); ++i)
+            if (data.shaderDirty[i])
+                SaveShaderSource(data, i);
         bool result = writeJsonFile<Project>(CalculateProjectFilePath(data), data.project, true);
         if (result)
             data.isProjectDirty = false;
@@ -158,6 +158,7 @@ namespace App
         Shader shader(name, type);
         data.project.shaders.push_back(shader);
         data.shaderLoaded.push_back(true);
+        data.shaderDirty.push_back(true);
         data.shaderSource.push_back(sourceText);
         data.shaderVaryingSource.push_back(varyingText);
         data.isProjectDirty = true;
@@ -198,6 +199,7 @@ namespace App
         std::string varyingPath = CalculateShaderVaryingPath(data, shaderName);
         bool savedSource = writeTextFile(sourcePath, data.shaderSource[shaderIndex], true);
         bool savedVarying = writeTextFile(varyingPath, data.shaderVaryingSource[shaderIndex], true);
+        data.shaderDirty[shaderIndex] = false;
         return savedSource && savedVarying;
     }
 }

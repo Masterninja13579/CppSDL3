@@ -33,6 +33,7 @@ struct AppData
     char newShaderName[SHADER_NAME_SIZE] = SHADER_NAME_DEFAULT;
 
     std::vector<bool> shaderLoaded;
+    std::vector<bool> shaderDirty;
     std::vector<std::string> shaderSource;
     std::vector<std::string> shaderVaryingSource;
 
